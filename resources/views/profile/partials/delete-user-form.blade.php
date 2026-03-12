@@ -11,6 +11,7 @@
         {{ __('Delete Account') }}
     </button>
 
+    @push('modals')
     <!-- Bootstrap Modal -->
     <div class="modal fade" id="confirmUserDeletionModal" tabindex="-1" aria-labelledby="confirmUserDeletionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -32,7 +33,7 @@
                         </p>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label sr-only">{{ __('Password') }}</label>
+                            <label for="password" class="form-label visually-hidden">{{ __('Password') }}</label>
                             <input
                                 type="password"
                                 id="password"
@@ -54,4 +55,5 @@
             </div>
         </div>
     </div>
+    @endpush
 </section>

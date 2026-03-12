@@ -54,6 +54,7 @@
         <script src="{{ asset('assets/js/common-init.min.js') }}"></script>
         
         <!-- Custom Scripts if any -->
+        @stack('modals')
         @stack('scripts')
     </body>
 </html>
