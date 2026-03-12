@@ -1,0 +1,539 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+:root {
+    /* Base Standard Variables */
+    --bg-color: #f7f7f7;
+    /* hsl(0, 0%, 97%) */
+    --text-color: #0c0a09;
+    /* hsl(20, 14.3%, 4.1%) */
+    --text-muted: #78716c;
+    /* Stone 500 approx */
+    --sidebar-bg: #ffffff;
+    --sidebar-width: 240px;
+    /* w-60 */
+    --header-height: 64px;
+    --border-color: #e7e5e4;
+    /* Stone 200 */
+
+    /* Palette from Reference (Stone) */
+    --stone-50: #fafaf9;
+    --stone-100: #f5f5f4;
+    --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1;
+    --stone-600: #57534e;
+    --stone-700: #44403c;
+    --stone-800: #292524;
+    --stone-900: #1c1917;
+
+    /* Semantic */
+    --primary-gradient-start: var(--stone-700);
+    --primary-gradient-end: var(--stone-800);
+    --surface: #ffffff;
+    --surface-muted: #f5f5f4;
+    --input-bg: #ffffff;
+
+    /* Status Colors (Matched to Stone Palette where possible or muted standard) */
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+}
+
+body.dark {
+    /* Dark Mode Variables based on hsl(240, 10%, 3.9%) */
+    --bg-color: #09090b;
+    --text-color: #fafaf9;
+    --text-muted: #a1a1aa;
+    --sidebar-bg: #09090b;
+    --border-color: #27272a;
+    --surface: #09090b;
+    --surface-muted: #18181b;
+    --input-bg: #09090b;
+
+    /* Adjust stones for dark mode if needed, or map to ZInc/Slate */
+    --stone-100: #1c1917;
+    --stone-200: #292524;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+}
+
+/* --- Layout --- */
+.duralux-layout {
+    /* Keeping wrapper name but changing style */
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--sidebar-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100%;
+    z-index: 50;
+    transition: transform 0.3s ease;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+.logo-area {
+    padding: 24px 24px 0 24px;
+    margin-bottom: 20px;
+}
+
+.logo-area h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-color);
+    /* Stone 900 */
+    font-family: 'Inter', sans-serif;
+    /* Reference uses sans, not serif */
+    letter-spacing: -0.025em;
+}
+
+.nav-label {
+    padding: 16px 24px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Base Nav Link Style */
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 14px;
+    font-weight: 400;
+    border-radius: 8px;
+    color: var(--stone-600);
+    /* Stone 700ish */
+    text-decoration: none;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    cursor: pointer;
+    user-select: none;
+}
+
+.body.dark .nav-link {
+    color: var(--text-muted);
+}
+
+.nav-link i {
+    width: 16px;
+    height: 16px;
+    margin-right: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Hover State */
+.nav-link:hover {
+    background-color: var(--stone-100);
+    color: var(--text-color);
+}
+
+/* Active State - The Material Shadcn Special */
+.nav-link.active {
+    background-color: var(--stone-800);
+    background-image: linear-gradient(to bottom, var(--stone-700), var(--stone-800));
+    border: 1px solid var(--stone-900);
+    color: var(--stone-50);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* shadow-sm */
+    position: relative;
+    font-weight: 500;
+    /* Slightly bolder */
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    /* The complex shadow from reference */
+    box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.25), inset 0 -2px 0px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+}
+
+.nav-link.active:hover {
+    background-image: linear-gradient(to bottom, var(--stone-800), var(--stone-800));
+}
+
+.nav-link.active i {
+    color: var(--stone-50);
+}
+
+/* --- Main Content --- */
+.main-content {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: calc(100% - var(--sidebar-width));
+    background-color: var(--bg-color);
+}
+
+/* --- Header / Topbar --- */
+header {
+    height: var(--header-height);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: transparent;
+    /* Reference suggests transparent or white */
+    /* border-bottom: 1px solid var(--border-color); optional in reference */
+}
+
+/* --- Cards & General UI --- */
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.page-header {
+    padding: 24px 24px 0;
+    margin-bottom: 24px;
+}
+
+.breadcrumb h3 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-color);
+    letter-spacing: -0.025em;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    padding: 0 24px 24px;
+}
+
+.stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stat-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-top: 8px;
+}
+
+/* --- Buttons --- */
+.btn-primary {
+    /* Style closer to the active sidebar link */
+    padding: 8px 16px;
+    border-radius: 8px;
+    background-color: var(--stone-800);
+    background-image: linear-gradient(to bottom, var(--stone-700), var(--stone-800));
+    color: var(--stone-50);
+    border: 1px solid var(--stone-900);
+    font-weight: 500;
+    position: relative;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 1px 0px rgba(255, 255, 255, 0.25), inset 0 -2px 0px rgba(0, 0, 0, 0.35);
+    pointer-events: none;
+}
+
+/* --- Tables (reference Projects Table) --- */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+th {
+    text-align: left;
+    padding: 12px 24px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- Utilities --- */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge-green {
+    background-color: #dcfce7;
+    color: #166534;
+}
+
+/* Green-100/800 */
+.badge-red {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+/* Red-100/800 */
+
+/* Header Right Buttons */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    /* or 8px if sticking to rects */
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.icon-btn:hover {
+    background-color: var(--stone-100);
+    color: var(--text-color);
+}
+
+/* --- Hero Card (Dashboard) --- */
+.hero-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0 24px 32px 24px;
+    /* Matches other page padding */
+    background-color: var(--stone-800);
+    background: linear-gradient(135deg, var(--stone-800), var(--stone-900));
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 10;
+    padding: 48px;
+    color: var(--stone-50);
+}
+
+.hero-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: #ffffff;
+    letter-spacing: -0.025em;
+}
+
+.hero-text {
+    font-size: 18px;
+    color: var(--stone-300);
+    max-width: 550px;
+    margin-bottom: 32px;
+    line-height: 1.6;
+}
+
+/* Custom Scrollbar for Sidebar/Content (Reference style) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--stone-300);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--stone-600);
+}
+
+/* --- Topbar Components --- */
+.top-search {
+    display: flex;
+    align-items: center;
+    background-color: var(--stone-100);
+    border-radius: 8px;
+    padding: 6px 12px;
+    width: 240px;
+    color: var(--stone-600);
+    border: 1px solid transparent;
+    transition: 0.2s;
+}
+
+.top-search:focus-within {
+    background-color: var(--input-bg);
+    border-color: var(--stone-300);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.top-search input {
+    border: none;
+    background: transparent;
+    outline: none;
+    margin-left: 8px;
+    font-size: 14px;
+    color: var(--text-color);
+    width: 100%;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.add-btn {
+    width: 32px;
+    height: 32px;
+    background-color: var(--stone-800);
+    color: var(--stone-50);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.add-btn:hover {
+    background-color: var(--stone-700);
+}
+
+.mega-menu-btn {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--stone-600);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mega-menu-btn:hover {
+    background-color: var(--stone-100);
+    color: var(--text-color);
+}
+
+.toolbar-toggle {
+    position: fixed;
+    top: 10px;
+    right: 80px;
+    z-index: 100;
+    width: 32px;
+    height: 32px;
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+/* Floating Settings from original design, kept for functionality but styled */
+.floating-settings {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--stone-800);
+    color: white;
+    padding: 10px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    cursor: pointer;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 200;
+}
