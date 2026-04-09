@@ -22,4 +22,9 @@ class Student extends Model
     {
         return $this->belongsTo(Supervisor::class);
     }
+
+    public function group()
+    {
+        return $this->belongsTo(StudentGroup::class, 'student_group_id');
+    }
 }

@@ -63,6 +63,7 @@ class ProposalController extends Controller
                 'student_id' => $student->id,
                 'title' => $request->title,
                 'status' => 'proposal_pending',
+                'supervisor_id' => $student->supervisor_id,
             ]);
 
             // 2. Handle File Upload

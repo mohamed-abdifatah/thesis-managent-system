@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Evaluation extends Model
+class CommitteeMember extends Model
 {
     protected $guarded = [];
 
@@ -13,8 +13,8 @@ class Evaluation extends Model
         return $this->belongsTo(DefenseSession::class);
     }
 
-    public function examiner()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
     }
 }

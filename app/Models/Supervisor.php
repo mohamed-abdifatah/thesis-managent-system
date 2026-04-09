@@ -17,4 +17,14 @@ class Supervisor extends Model
     {
         return $this->hasMany(Thesis::class);
     }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class);
+    }
+
+    public function groups()
+    {
+        return $this->hasMany(StudentGroup::class);
+    }
 }

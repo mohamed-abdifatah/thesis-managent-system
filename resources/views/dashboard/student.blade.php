@@ -39,6 +39,9 @@
                                     <a href="{{ route('proposals.index') }}" class="btn btn-light fw-bold text-primary">
                                         <i class="feather-eye me-2"></i> View Proposals
                                     </a>
+                                    <a href="{{ route('thesis.versions.index') }}" class="btn btn-primary fw-bold">
+                                        <i class="feather-upload-cloud me-2"></i> Thesis Versions
+                                    </a>
                                 </div>
                             @endif
                         </div>

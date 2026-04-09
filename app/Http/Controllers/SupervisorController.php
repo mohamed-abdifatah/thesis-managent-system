@@ -21,7 +21,12 @@ class SupervisorController extends Controller
             $q->latest();
         }])->get();
 
-        return view('supervisor.students.index', compact('theses'));
+        $studentsWithoutThesis = $supervisor->students()
+            ->whereDoesntHave('thesis')
+            ->with('user')
+            ->get();
+
+        return view('supervisor.students.index', compact('theses', 'studentsWithoutThesis'));
     }
 
     public function showThesis(Thesis $thesis)

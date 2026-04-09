@@ -28,6 +28,8 @@
                     </a>
                     <ul class="nxl-submenu">
                         <li class="nxl-item"><a class="nxl-link" href="{{ route('proposals.index') }}">My Proposal</a></li> 
+                        <li class="nxl-item"><a class="nxl-link" href="{{ route('thesis.versions.index') }}">Thesis Versions</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="{{ route('defense.schedule') }}">Defense Schedule</a></li>
                     </ul>
                 </li>
                 @endif
@@ -41,7 +43,17 @@
                     </a>
                     <ul class="nxl-submenu">
                         <li class="nxl-item"><a class="nxl-link" href="{{ route('supervisor.students.index') }}">My Students</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="{{ route('defense.schedule') }}">Defense Schedule</a></li>
                     </ul>
+                </li>
+                @endif
+
+                @if(auth()->user() && auth()->user()->hasRole('examiner'))
+                <li class="nxl-item">
+                    <a href="{{ route('examiner.defenses.index') }}" class="nxl-link">
+                        <span class="nxl-micon"><i class="feather-check-square"></i></span>
+                        <span class="nxl-mtext">My Evaluations</span>
+                    </a>
                 </li>
                 @endif
 
@@ -55,7 +67,9 @@
                     <ul class="nxl-submenu">
                          <li class="nxl-item"><a class="nxl-link" href="{{ route('admin.users.index') }}">Manage Users</a></li>
                          <li class="nxl-item"><a class="nxl-link" href="{{ route('admin.users.create') }}">Add New User</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="{{ route('admin.groups.index') }}">Student Groups</a></li>
                          <li class="nxl-item"><a class="nxl-link" href="{{ route('admin.theses.index') }}">Manage Theses</a></li>
+                        <li class="nxl-item"><a class="nxl-link" href="{{ route('admin.defenses.index') }}">Defense Sessions</a></li>
                     </ul>
                 </li>
                 @endif
