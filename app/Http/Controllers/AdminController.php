@@ -8,8 +8,10 @@ use App\Models\Department;
 use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\Thesis;
+use App\Models\StudentGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
@@ -110,6 +112,9 @@ class AdminController extends Controller
                 $user->student->update([
                     'supervisor_id' => $request->supervisor_id
                 ]);
+                if ($user->student->thesis && $request->supervisor_id) {
+                    $user->student->thesis->update(['supervisor_id' => $request->supervisor_id]);
+                }
             }
         } elseif (in_array($roleName, ['supervisor', 'cosupervisor']) && !$user->supervisor) {
             Supervisor::create([
@@ -152,6 +157,116 @@ class AdminController extends Controller
             'supervisor_id' => $request->supervisor_id,
         ]);
 
+        if ($thesis->student) {
+            $thesis->student->update(['supervisor_id' => $request->supervisor_id]);
+        }
+
         return back()->with('success', 'Supervisor assigned successfully.');
+    }
+
+    public function groupsIndex()
+    {
+        $groups = StudentGroup::with(['supervisor.user', 'department'])
+            ->withCount('students')
+            ->latest()
+            ->paginate(10);
+
+        return view('admin.groups.index', compact('groups'));
+    }
+
+    public function groupsCreate()
+    {
+        $departments = Department::all();
+        $supervisors = Supervisor::with('user')->get();
+        $studentUsers = User::with('student')
+            ->whereHas('role', function ($query) {
+                $query->where('name', 'student');
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.groups.create', compact('departments', 'supervisors', 'studentUsers'));
+    }
+
+    public function groupsStore(Request $request)
+    {
+        $request->validate([
+            'group_name' => 'required|string|max:255',
+            'department_id' => 'required|exists:departments,id',
+            'supervisor_id' => 'required|exists:supervisors,id',
+            'program' => 'nullable|string|max:255',
+            'academic_year' => 'nullable|string|max:50',
+            'notes' => 'nullable|string',
+            'default_password' => 'required|string|min:8',
+            'mode' => 'required|in:new,existing',
+            'students' => 'nullable|array',
+            'students.*.name' => 'required_if:mode,new|string|max:255',
+            'students.*.email' => 'required_if:mode,new|email|distinct|unique:users,email',
+            'existing_students' => 'nullable|array',
+            'existing_students.*' => 'exists:users,id',
+        ]);
+
+        $studentRole = Role::where('name', 'student')->firstOrFail();
+
+        DB::transaction(function () use ($request, $studentRole) {
+            $group = StudentGroup::create([
+                'name' => $request->group_name,
+                'supervisor_id' => $request->supervisor_id,
+                'department_id' => $request->department_id,
+                'program' => $request->program,
+                'academic_year' => $request->academic_year,
+                'notes' => $request->notes,
+            ]);
+
+            if ($request->mode === 'new') {
+                foreach ($request->students as $studentData) {
+                    $user = User::create([
+                        'name' => $studentData['name'],
+                        'email' => $studentData['email'],
+                        'password' => Hash::make($request->default_password),
+                        'role_id' => $studentRole->id,
+                        'department_id' => $request->department_id,
+                    ]);
+
+                    Student::create([
+                        'user_id' => $user->id,
+                        'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                        'program' => $request->program ?? 'General',
+                        'supervisor_id' => $request->supervisor_id,
+                        'student_group_id' => $group->id,
+                    ]);
+                }
+            }
+
+            if ($request->mode === 'existing' && $request->filled('existing_students')) {
+                $existingUsers = User::with('student', 'role')
+                    ->whereIn('id', $request->existing_students)
+                    ->get();
+
+                foreach ($existingUsers as $user) {
+                    if (!$user->role || $user->role->name !== 'student') {
+                        continue;
+                    }
+
+                    if (!$user->student) {
+                        Student::create([
+                            'user_id' => $user->id,
+                            'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                            'program' => $request->program ?? 'General',
+                            'supervisor_id' => $request->supervisor_id,
+                            'student_group_id' => $group->id,
+                        ]);
+                    } else {
+                        $user->student->update([
+                            'student_group_id' => $group->id,
+                            'supervisor_id' => $request->supervisor_id,
+                            'program' => $request->program ?? $user->student->program,
+                        ]);
+                    }
+                }
+            }
+        });
+
+        return redirect()->route('admin.groups.index')->with('success', 'Student group created successfully.');
     }
 }
