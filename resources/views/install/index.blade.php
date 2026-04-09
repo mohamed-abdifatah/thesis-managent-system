@@ -16,7 +16,7 @@
                         <div class="card-body p-4">
                             <div class="mb-4 text-center">
                                 <h2 class="fw-bold">Install Thesis Management System</h2>
-                                <p class="text-muted">Configure database, app settings, and admin account using the CLI installer.</p>
+                                <p class="text-muted">Configure database, app settings, and admin account.</p>
                             </div>
 
                             @if($errors->any())
@@ -42,7 +42,6 @@
 
                             <form method="POST" action="{{ route('install.store') }}">
                                 @csrf
-                                <input type="hidden" name="use_cli" value="1">
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold" for="install_token">Install Token</label>
@@ -144,7 +143,7 @@
 
                                 <div class="mt-4 text-end">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="feather-terminal me-1"></i> Install via CLI Engine
+                                        <i class="feather-check-circle me-1"></i> Install Now
                                     </button>
                                 </div>
                             </form>

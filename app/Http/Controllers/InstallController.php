@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Department;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class InstallController extends Controller
 {
@@ -78,10 +83,6 @@ class InstallController extends Controller
             return back()->withErrors(['install_token' => 'Invalid install token.'])->withInput();
         }
 
-        if (!$request->boolean('use_cli')) {
-            $request->merge(['use_cli' => true]);
-        }
-
         if ($request->boolean('use_cli')) {
             $options = [
                 '--app-name' => $request->app_name,
@@ -116,5 +117,108 @@ class InstallController extends Controller
 
             return redirect()->route('login')->with('success', 'Installation complete. Please log in.');
         }
+
+        $envUpdates = [
+            'APP_NAME' => $request->app_name,
+            'APP_URL' => $request->app_url,
+            'APP_INSTALLED' => 'true',
+        ];
+
+        if ($request->db_mode === 'manual') {
+            $envUpdates['DB_HOST'] = $request->db_host;
+            $envUpdates['DB_PORT'] = $request->db_port;
+            $envUpdates['DB_DATABASE'] = $request->db_database;
+            $envUpdates['DB_USERNAME'] = $request->db_username;
+            $envUpdates['DB_PASSWORD'] = $request->db_password ?? '';
+        }
+
+        $envPath = base_path('.env');
+        if (!file_exists($envPath)) {
+            return back()->withErrors(['install' => 'Missing .env file. Please create it from .env.example first.'])->withInput();
+        }
+
+        $this->updateEnvFile($envPath, $envUpdates);
+
+        try {
+            Artisan::call('config:clear');
+            Artisan::call('cache:clear');
+            Artisan::call('key:generate', ['--force' => true]);
+
+            if (!glob(database_path('migrations/*_create_sessions_table.php'))) {
+                Artisan::call('session:table');
+            }
+
+            if (!glob(database_path('migrations/*_create_cache_table.php'))) {
+                Artisan::call('cache:table');
+            }
+
+            if (!glob(database_path('migrations/*_create_jobs_table.php'))) {
+                Artisan::call('queue:table');
+            }
+
+            if ($request->boolean('reset_db')) {
+                Artisan::call('migrate:fresh', ['--force' => true]);
+            } else {
+                Artisan::call('migrate', ['--force' => true]);
+            }
+
+            Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\RoleSeeder']);
+            Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DepartmentSeeder']);
+
+            if ($request->account_mode === 'seed') {
+                Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\UserSeeder']);
+            }
+
+            if ($request->account_mode === 'manual') {
+                $role = Role::where('name', 'admin')->first();
+                $department = Department::first();
+
+                User::updateOrCreate(
+                    ['email' => $request->admin_email],
+                    [
+                        'name' => $request->admin_name,
+                        'password' => Hash::make($request->admin_password),
+                        'role_id' => $role?->id,
+                        'department_id' => $department?->id,
+                    ]
+                );
+            }
+        } catch (\Throwable $e) {
+            Log::error('Install failed: ' . $e->getMessage());
+            $output = trim(Artisan::output());
+            return back()->withErrors(['install' => $output ?: 'Install failed. Check logs for details.'])->withInput();
+        }
+
+        return redirect()->route('login')->with('success', 'Installation complete. Please log in.');
+    }
+
+    private function updateEnvFile(string $path, array $values): void
+    {
+        $contents = file_get_contents($path);
+
+        foreach ($values as $key => $value) {
+            $escaped = $this->escapeEnvValue((string) $value);
+            if (preg_match("/^{$key}=.*/m", $contents)) {
+                $contents = preg_replace("/^{$key}=.*/m", "{$key}={$escaped}", $contents);
+            } else {
+                $contents .= "\n{$key}={$escaped}";
+            }
+        }
+
+        file_put_contents($path, $contents);
+    }
+
+    private function escapeEnvValue(string $value): string
+    {
+        if ($value === '') {
+            return '';
+        }
+
+        if (preg_match('/\s/', $value)) {
+            $escaped = str_replace('"', '\\"', $value);
+            return '"' . $escaped . '"';
+        }
+
+        return $value;
     }
 }
