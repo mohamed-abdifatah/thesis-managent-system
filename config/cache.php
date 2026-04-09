@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$installed = filter_var(env('APP_INSTALLED', false), FILTER_VALIDATE_BOOL);
+
 return [
 
     /*
@@ -15,7 +17,7 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'database'),
+    'default' => $installed ? env('CACHE_STORE', 'database') : 'file',
 
     /*
     |--------------------------------------------------------------------------

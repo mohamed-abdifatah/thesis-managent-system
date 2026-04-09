@@ -121,7 +121,6 @@ class InstallController extends Controller
         $envUpdates = [
             'APP_NAME' => $request->app_name,
             'APP_URL' => $request->app_url,
-            'APP_INSTALLED' => 'true',
         ];
 
         if ($request->db_mode === 'manual') {
@@ -141,6 +140,7 @@ class InstallController extends Controller
 
         try {
             Artisan::call('config:clear');
+            config(['cache.default' => 'file']);
             Artisan::call('cache:clear');
             Artisan::call('key:generate', ['--force' => true]);
 
@@ -188,6 +188,9 @@ class InstallController extends Controller
             $output = trim(Artisan::output());
             return back()->withErrors(['install' => $output ?: 'Install failed. Check logs for details.'])->withInput();
         }
+
+        $this->updateEnvFile($envPath, ['APP_INSTALLED' => 'true']);
+        Artisan::call('config:clear');
 
         return redirect()->route('login')->with('success', 'Installation complete. Please log in.');
     }

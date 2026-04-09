@@ -81,6 +81,7 @@ Artisan::command('tms:install
     $updateEnv($envPath, $envUpdates);
 
     Artisan::call('config:clear');
+    config(['cache.default' => 'file']);
     Artisan::call('cache:clear');
     Artisan::call('key:generate', ['--force' => true]);
     if ($this->option('reset-db')) {
