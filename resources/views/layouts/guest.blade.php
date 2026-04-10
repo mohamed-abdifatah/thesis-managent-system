@@ -7,22 +7,47 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <!-- Favicon -->
+        <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/bootstrap.min.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/vendors/css/vendors.min.css') }}" />
+        <link rel="stylesheet" type="text/css" href="{{ asset('assets/css/theme.min.css') }}" />
+
+        <style>
+            body {
+                background: #f5f6fa;
+                color: #1b1f24;
+            }
+
+            .guest-shell {
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 32px 16px;
+            }
+
+            .guest-card {
+                width: 100%;
+                max-width: 420px;
+                background: #ffffff;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid rgba(27, 31, 36, 0.08);
+                box-shadow: 0 18px 40px rgba(15, 20, 27, 0.08);
+            }
+        </style>
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
-            </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+    <body>
+        <div class="guest-shell">
+            <div class="guest-card">
+                <div class="text-center mb-4">
+                    <a href="/">
+                        <x-application-logo class="w-20 h-20" />
+                    </a>
+                </div>
                 {{ $slot }}
             </div>
         </div>

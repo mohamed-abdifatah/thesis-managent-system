@@ -1,7 +1,7 @@
 <x-app-layout>
     @php
         $student = auth()->user()->student;
-        $thesis = $student ? $student->thesis : null;
+        $thesis = $student ? $student->accessibleThesis() : null;
         $proposals = $thesis ? $thesis->proposals()->latest()->take(5)->get() : collect();
         $latestProposal = $proposals->first();
         $pendingTasks = 0; // Placeholder for now

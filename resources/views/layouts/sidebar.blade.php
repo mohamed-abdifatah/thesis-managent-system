@@ -4,7 +4,7 @@
             <a href="{{ route('dashboard') }}" class="b-brand">
                 <!-- <img src="{{ asset('assets/images/logo-full.png') }}" alt="" class="logo logo-lg" /> -->
                 <!-- <img src="{{ asset('assets/images/logo-abr.png') }}" alt="" class="logo logo-sm" /> -->
-                <h4 class="logo logo-lg">Thesis App</h4>
+                <h4 class="logo logo-lg app-brand-title">Thesis App</h4>
             </a>
         </div>
         <div class="navbar-content">

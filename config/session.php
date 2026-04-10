@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Str;
 
+$installed = filter_var(env('APP_INSTALLED', false), FILTER_VALIDATE_BOOL);
+
 return [
 
     /*
@@ -18,7 +20,7 @@ return [
     |
     */
 
-    'driver' => env('SESSION_DRIVER', 'database'),
+    'driver' => $installed ? env('SESSION_DRIVER', 'database') : 'file',
 
     /*
     |--------------------------------------------------------------------------

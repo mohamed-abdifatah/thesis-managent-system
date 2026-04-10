@@ -28,6 +28,11 @@ class Thesis extends Model
         return $this->hasMany(ThesisVersion::class);
     }
 
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
     public function defense()
     {
         return $this->hasOne(DefenseSession::class);

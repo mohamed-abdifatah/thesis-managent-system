@@ -12,6 +12,8 @@ use App\Http\Controllers\DefenseScheduleController;
 use App\Http\Controllers\SupervisorController;
 use App\Http\Controllers\ThesisVersionController;
 use App\Http\Controllers\InstallController;
+use App\Http\Controllers\FeedbackController;
+use App\Http\Controllers\ExaminerThesisController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -33,6 +35,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('proposals', ProposalController::class);
     Route::get('/thesis/versions', [ThesisVersionController::class, 'index'])->name('thesis.versions.index');
     Route::post('/thesis/versions', [ThesisVersionController::class, 'store'])->name('thesis.versions.store');
+    Route::patch('/thesis/versions/{version}/status', [ThesisVersionController::class, 'updateStatus'])
+        ->middleware('role:supervisor,examiner')
+        ->name('thesis.versions.status');
+    Route::post('/thesis/versions/{version}/feedback', [FeedbackController::class, 'storeVersion'])
+        ->middleware('role:student,supervisor,examiner')
+        ->name('thesis.versions.feedback.store');
+    Route::post('/thesis/{thesis}/feedback', [FeedbackController::class, 'storeThesis'])
+        ->middleware('role:student,supervisor,examiner')
+        ->name('thesis.feedback.store');
     Route::get('/defense/schedule', [DefenseScheduleController::class, 'index'])->name('defense.schedule');
 
     // Admin Routes
@@ -73,6 +84,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:examiner')->prefix('examiner')->name('examiner.')->group(function () {
         Route::get('/defenses', [ExaminerDefenseController::class, 'index'])->name('defenses.index');
         Route::post('/defenses/{defense}/evaluation', [ExaminerDefenseController::class, 'storeEvaluation'])->name('defenses.evaluate');
+        Route::get('/theses/{thesis}', [ExaminerThesisController::class, 'show'])->name('theses.show');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

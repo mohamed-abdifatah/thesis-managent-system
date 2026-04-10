@@ -21,9 +21,10 @@ class ProposalController extends Controller
                  $q->where('supervisor_id', $user->supervisor->id);
              })->with(['thesis.student.user'])->latest()->get();
         } elseif ($user->hasRole('student') && $user->student) {
-             $proposals = Proposal::whereHas('thesis', function($q) use ($user) {
-                 $q->where('student_id', $user->student->id);
-             })->latest()->get();
+            $accessibleThesis = $user->student->accessibleThesis();
+            $proposals = $accessibleThesis
+                ? Proposal::where('thesis_id', $accessibleThesis->id)->latest()->get()
+                : collect();
         } else {
             $proposals = collect();
         }
@@ -33,10 +34,13 @@ class ProposalController extends Controller
 
     public function create()
     {
-        // Check if student already has a thesis
         $student = auth()->user()->student;
-        if ($student->thesis) {
-             return redirect()->route('dashboard')->with('error', 'You already have a thesis proposal.');
+        if (!$student) {
+            abort(403);
+        }
+
+        if ($student->accessibleThesis()) {
+             return redirect()->route('dashboard')->with('error', 'A thesis proposal already exists for your account or group.');
         }
         
         return view('proposals.create');
@@ -54,6 +58,13 @@ class ProposalController extends Controller
         ]);
 
         $student = auth()->user()->student;
+        if (!$student) {
+            abort(403);
+        }
+
+        if ($student->accessibleThesis()) {
+            return back()->with('error', 'Your group already has an active thesis proposal.');
+        }
         
         // Transaction to ensure data integrity
         \DB::transaction(function () use ($request, $student) {
