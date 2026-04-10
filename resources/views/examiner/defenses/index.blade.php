@@ -30,7 +30,12 @@
                                     <div class="text-muted">Scheduled: {{ $session->scheduled_at->format('M d, Y h:i A') }}</div>
                                     <div class="text-muted">Location: {{ $session->location ?? 'TBD' }}</div>
                                 </div>
-                                <span class="badge bg-soft-primary text-primary text-uppercase">{{ $session->status }}</span>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-soft-primary text-primary text-uppercase">{{ $session->status }}</span>
+                                    <a href="{{ route('examiner.theses.show', $session->thesis) }}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="feather-file-text me-1"></i> Thesis
+                                    </a>
+                                </div>
                             </div>
 
                             @php

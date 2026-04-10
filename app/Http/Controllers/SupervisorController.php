@@ -22,9 +22,12 @@ class SupervisorController extends Controller
         }])->get();
 
         $studentsWithoutThesis = $supervisor->students()
-            ->whereDoesntHave('thesis')
-            ->with('user')
-            ->get();
+            ->with(['user', 'group.students.thesis'])
+            ->get()
+            ->filter(function ($student) {
+                return !$student->accessibleThesis();
+            })
+            ->values();
 
         return view('supervisor.students.index', compact('theses', 'studentsWithoutThesis'));
     }
@@ -36,7 +39,15 @@ class SupervisorController extends Controller
             abort(403);
         }
 
-        $thesis->load(['student.user', 'proposals', 'versions', 'student.user.department']);
+        $thesis->load([
+            'student.user',
+            'proposals',
+            'versions.feedbacks.user',
+            'versions.reviewer',
+            'feedbacks.user',
+            'feedbacks.thesisVersion',
+            'student.user.department',
+        ]);
         $latestProposal = $thesis->proposals()->latest()->first();
 
         return view('supervisor.theses.show', compact('thesis', 'latestProposal'));

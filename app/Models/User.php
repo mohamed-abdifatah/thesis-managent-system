@@ -45,6 +45,11 @@ class User extends Authenticatable
         return $this->belongsTo(Department::class);
     }
 
+    public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class);
+    }
+
     /**
      * Check if user has specific role
      * @param string|array $role

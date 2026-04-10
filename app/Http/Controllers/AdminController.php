@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class AdminController extends Controller
 {
@@ -197,16 +198,45 @@ class AdminController extends Controller
             'program' => 'nullable|string|max:255',
             'academic_year' => 'nullable|string|max:50',
             'notes' => 'nullable|string',
-            'default_password' => 'required|string|min:8',
-            'mode' => 'required|in:new,existing',
+            'default_password' => 'nullable|string|min:8',
             'students' => 'nullable|array',
-            'students.*.name' => 'required_if:mode,new|string|max:255',
-            'students.*.email' => 'required_if:mode,new|email|distinct|unique:users,email',
+            'students.*.name' => 'nullable|string|max:255',
+            'students.*.email' => 'nullable|email|distinct|unique:users,email',
             'existing_students' => 'nullable|array',
             'existing_students.*' => 'exists:users,id',
         ]);
 
         $studentRole = Role::where('name', 'student')->firstOrFail();
+
+        $newStudents = collect($request->input('students', []))
+            ->filter(function ($student) {
+                return filled($student['name'] ?? null) || filled($student['email'] ?? null);
+            })
+            ->values();
+
+        $existingStudentIds = collect($request->input('existing_students', []))
+            ->filter()
+            ->values();
+
+        if ($newStudents->isEmpty() && $existingStudentIds->isEmpty()) {
+            throw ValidationException::withMessages([
+                'students' => 'Add at least one new or existing student to create a group.',
+            ]);
+        }
+
+        foreach ($newStudents as $index => $studentData) {
+            if (!filled($studentData['name'] ?? null) || !filled($studentData['email'] ?? null)) {
+                throw ValidationException::withMessages([
+                    "students.{$index}.name" => 'Each new student must have a full name and email.',
+                ]);
+            }
+        }
+
+        if ($newStudents->isNotEmpty() && !filled($request->default_password)) {
+            throw ValidationException::withMessages([
+                'default_password' => 'Default password is required only when creating new students.',
+            ]);
+        }
 
         DB::transaction(function () use ($request, $studentRole) {
             $group = StudentGroup::create([
@@ -218,8 +248,13 @@ class AdminController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            if ($request->mode === 'new') {
-                foreach ($request->students as $studentData) {
+            $newStudents = collect($request->input('students', []))
+                ->filter(function ($student) {
+                    return filled($student['name'] ?? null) && filled($student['email'] ?? null);
+                })
+                ->values();
+
+            foreach ($newStudents as $studentData) {
                     $user = User::create([
                         'name' => $studentData['name'],
                         'email' => $studentData['email'],
@@ -235,10 +270,9 @@ class AdminController extends Controller
                         'supervisor_id' => $request->supervisor_id,
                         'student_group_id' => $group->id,
                     ]);
-                }
             }
 
-            if ($request->mode === 'existing' && $request->filled('existing_students')) {
+            if ($request->filled('existing_students')) {
                 $existingUsers = User::with('student', 'role')
                     ->whereIn('id', $request->existing_students)
                     ->get();

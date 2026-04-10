@@ -21,6 +21,12 @@
     <form method="POST" action="{{ route('admin.groups.store') }}">
         @csrf
 
+        @if($errors->has('students') || $errors->has('existing_students'))
+            <div class="alert alert-danger mb-4" role="alert">
+                {{ $errors->first('students') ?: $errors->first('existing_students') }}
+            </div>
+        @endif
+
         <div class="row g-4">
             <div class="col-lg-5">
                 <div class="card stretch stretch-full border-0 shadow-sm">
@@ -84,9 +90,9 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-semibold" for="default_password">Default Student Password <span class="text-danger">*</span></label>
-                            <input type="password" class="form-control @error('default_password') is-invalid @enderror" id="default_password" name="default_password" required>
-                            <div class="form-text">All new students will use this password. They can change it later.</div>
+                            <label class="form-label fw-semibold" for="default_password">Default Password For New Users</label>
+                            <input type="password" class="form-control @error('default_password') is-invalid @enderror" id="default_password" name="default_password" placeholder="Required only if adding new users">
+                            <div class="form-text">Only needed when creating new student accounts. Existing users keep their current password.</div>
                             @error('default_password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -101,44 +107,37 @@
                         <div class="d-flex align-items-center justify-content-between mb-3">
                             <div>
                                 <h5 class="fw-bold text-dark mb-1">Students in Group</h5>
-                                <p class="text-muted small mb-0">Create new students or pick existing ones from the system.</p>
+                                <p class="text-muted small mb-0">Mix existing users and new users in one group setup.</p>
                             </div>
+                            <span class="badge bg-soft-primary text-primary">Flexible Enrollment</span>
                         </div>
 
-                        <div class="d-flex align-items-center gap-3 mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="mode" id="modeNew" value="new" checked>
-                                <label class="form-check-label" for="modeNew">Create New Students</label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="mode" id="modeExisting" value="existing">
-                                <label class="form-check-label" for="modeExisting">Select Existing Students</label>
-                            </div>
-                        </div>
-
-                        <div id="newStudentsSection">
-                            <div class="d-flex align-items-center justify-content-between mb-3">
-                                <span class="text-muted small">Add students to this group. One row per student.</span>
+                        <div id="newStudentsSection" class="mb-4 p-3 border rounded-3 bg-light-subtle">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="fw-bold mb-0">Create New Student Users</h6>
                                 <button type="button" class="btn btn-sm btn-light-brand" id="addStudentRow">
                                     <i class="feather-plus me-1"></i> Add Row
                                 </button>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <span class="text-muted small">Leave rows empty if you only want to add existing users.</span>
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-hover align-middle" id="studentTable">
                                     <thead>
                                         <tr>
-                                            <th style="width: 45%">Full Name <span class="text-danger">*</span></th>
-                                            <th style="width: 45%">Email <span class="text-danger">*</span></th>
+                                            <th style="width: 45%">Full Name</th>
+                                            <th style="width: 45%">Email</th>
                                             <th class="text-end" style="width: 10%">Remove</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
                                             <td>
-                                                <input type="text" name="students[0][name]" class="form-control" required placeholder="Student Name">
+                                                <input type="text" name="students[0][name]" class="form-control" placeholder="Student Name">
                                             </td>
                                             <td>
-                                                <input type="email" name="students[0][email]" class="form-control" required placeholder="student@example.com">
+                                                <input type="email" name="students[0][email]" class="form-control" placeholder="student@example.com">
                                             </td>
                                             <td class="text-end">
                                                 <button type="button" class="btn btn-sm btn-outline-danger remove-row" disabled>
@@ -151,13 +150,19 @@
                             </div>
                         </div>
 
-                        <div id="existingStudentsSection" class="d-none">
+                        <div id="existingStudentsSection" class="p-3 border rounded-3">
+                            <div class="d-flex align-items-center justify-content-between mb-3">
+                                <h6 class="fw-bold mb-0">Add Existing Student Users</h6>
+                                <div style="max-width: 260px; width: 100%;">
+                                    <input type="text" id="existingStudentSearch" class="form-control form-control-sm" placeholder="Search name or email...">
+                                </div>
+                            </div>
                             <div class="alert alert-info d-flex align-items-center" role="alert">
                                 <i class="feather-info me-2"></i>
-                                <span>Select existing student users. They will be linked to this group and supervisor.</span>
+                                <span>Select existing students to link them to this group and supervisor without resetting their password.</span>
                             </div>
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle">
+                                <table class="table table-hover align-middle" id="existingStudentTable">
                                     <thead>
                                         <tr>
                                             <th style="width: 5%"></th>
@@ -168,7 +173,7 @@
                                     </thead>
                                     <tbody>
                                         @forelse($studentUsers as $studentUser)
-                                            <tr>
+                                            <tr data-existing-row>
                                                 <td>
                                                     <div class="form-check">
                                                         <input class="form-check-input" type="checkbox" name="existing_students[]" value="{{ $studentUser->id }}">
@@ -206,10 +211,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const addButton = document.getElementById('addStudentRow');
             const tableBody = document.querySelector('#studentTable tbody');
-            const modeNew = document.getElementById('modeNew');
-            const modeExisting = document.getElementById('modeExisting');
-            const newSection = document.getElementById('newStudentsSection');
-            const existingSection = document.getElementById('existingStudentsSection');
+            const existingSearch = document.getElementById('existingStudentSearch');
+            const existingRows = document.querySelectorAll('[data-existing-row]');
 
             const updateIndexes = () => {
                 [...tableBody.querySelectorAll('tr')].forEach((row, index) => {
@@ -231,10 +234,10 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <input type="text" name="students[0][name]" class="form-control" required placeholder="Student Name">
+                        <input type="text" name="students[0][name]" class="form-control" placeholder="Student Name">
                     </td>
                     <td>
-                        <input type="email" name="students[0][email]" class="form-control" required placeholder="student@example.com">
+                        <input type="email" name="students[0][email]" class="form-control" placeholder="student@example.com">
                     </td>
                     <td class="text-end">
                         <button type="button" class="btn btn-sm btn-outline-danger remove-row">
@@ -258,19 +261,13 @@
 
             updateIndexes();
 
-            const toggleMode = () => {
-                if (modeExisting.checked) {
-                    newSection.classList.add('d-none');
-                    existingSection.classList.remove('d-none');
-                } else {
-                    newSection.classList.remove('d-none');
-                    existingSection.classList.add('d-none');
-                }
-            };
-
-            modeNew.addEventListener('change', toggleMode);
-            modeExisting.addEventListener('change', toggleMode);
-            toggleMode();
+            existingSearch?.addEventListener('input', () => {
+                const term = existingSearch.value.trim().toLowerCase();
+                existingRows.forEach((row) => {
+                    const text = row.textContent.toLowerCase();
+                    row.classList.toggle('d-none', term.length > 0 && !text.includes(term));
+                });
+            });
         });
     </script>
 </x-app-layout>

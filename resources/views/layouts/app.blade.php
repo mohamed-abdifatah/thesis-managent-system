@@ -101,6 +101,19 @@
                 color: inherit;
                 border-color: rgba(255, 255, 255, 0.08);
             }
+
+            .modal-backdrop {
+                display: none !important;
+                background-color: transparent !important;
+                opacity: 0 !important;
+                filter: none !important;
+                backdrop-filter: none !important;
+            }
+
+            body.modal-open {
+                overflow: auto !important;
+                padding-right: 0 !important;
+            }
         </style>
         
         <!-- Scripts -->
@@ -137,6 +150,9 @@
 
         <!-- Vendors JS -->
         <script src="{{ asset('assets/vendors/js/vendors.min.js') }}"></script>
+
+        <!-- Bootstrap JS (modal, dropdown, etc.) -->
+        <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
         
         <!-- Common Init JS -->
         <script src="{{ asset('assets/js/common-init.min.js') }}"></script>

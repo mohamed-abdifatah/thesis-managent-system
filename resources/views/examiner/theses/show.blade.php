@@ -1,18 +1,57 @@
 <x-app-layout>
     <style>
-                .chat-panel .card-body {
+        .chat-panel .card-body {
             flex: 1;
-            min-height: 0;
-            padding: 0;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #efeae2;
+        }
+
+        .chat-shell {
+            /* No background or padding needed here anymore */
+        }
+
+        .chat-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1060;
+            background: rgba(15, 20, 27, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .chat-panel {
+            width: 100%;
+            max-width: 1100px;
+            max-height: 85vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 20, 27, 0.2);
+            overflow: scroll;
+        }
+
+        .chat-panel .card {
+            border: 0;
+            border-radius: 16px;
+            height: 100%;
             display: flex;
             flex-direction: column;
         }
 
-        .chat-shell {
+        .chat-panel .card-body {
             flex: 1;
-            overflow-y: auto;
+            min-height: 0;
+            overflow: scroll;
             padding: 1rem;
-            background: #e5ddd5;
+        }
+
+        .chat-panel .card-footer {
+            background: #ffffff;
+            flex: 0 0 auto;
+            border-top: 1px solid rgba(27, 31, 36, 0.08);
+            padding: 14px 16px;
         }
 
         .chat-row {
@@ -70,49 +109,6 @@
             gap: 6px;
         }
 
-        .chat-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1060;
-            background: rgba(15, 20, 27, 0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .chat-panel {
-            width: 100%;
-            max-width: 1100px;
-            max-height: 85vh;
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(15, 20, 27, 0.2);
-            overflow: scroll;
-        }
-
-        .chat-panel .card {
-            border: 0;
-            border-radius: 16px;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-panel .card-body {
-            flex: 1;
-            min-height: 0;
-            overflow: hidden;
-            padding: 1rem;
-        }
-
-        .chat-panel .card-footer {
-            background: #ffffff;
-            flex: 0 0 auto;
-            border-top: 1px solid rgba(27, 31, 36, 0.08);
-            padding: 14px 16px;
-        }
-
         .chat-shell::-webkit-scrollbar {
             width: 8px;
         }
@@ -134,126 +130,96 @@
         .chat-panel .card-header {
             border-bottom: 1px solid rgba(27, 31, 36, 0.08);
         }
-
     </style>
-    <!-- Page Header -->
     <div class="page-header d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h2 class="page-header-title h3 mb-0">Thesis Versions</h2>
+            <h2 class="page-header-title h3 mb-0">Thesis Review</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Versions</li>
+                    <li class="breadcrumb-item"><a href="{{ route('examiner.defenses.index') }}">Defenses</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Thesis</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('proposals.index') }}" class="btn btn-outline-secondary">
-                <i class="feather-arrow-left me-1"></i> Back to Proposals
+            <a href="{{ route('examiner.defenses.index') }}" class="btn btn-outline-secondary">
+                <i class="feather-arrow-left me-1"></i> Back to Defenses
             </a>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title fw-bold mb-0">Upload New Version</h5>
-                </div>
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card stretch stretch-full border-0 shadow-sm mb-4">
                 <div class="card-body">
-                    <form method="POST" action="{{ route('thesis.versions.store') }}" enctype="multipart/form-data">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="file" class="form-label fw-semibold">Document <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control @error('file') is-invalid @enderror" id="file" name="file" required accept=".pdf,.doc,.docx">
-                            <div class="form-text">PDF, DOC, DOCX (max 10MB)</div>
-                            @error('file')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                        <div class="mb-3">
-                            <label for="comments" class="form-label fw-semibold">Notes (Optional)</label>
-                            <textarea id="comments" name="comments" rows="3" class="form-control" placeholder="Add a short summary of changes..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">
-                            <i class="feather-upload-cloud me-2"></i> Upload Version
-                        </button>
-                    </form>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h3 class="h4 text-dark fw-bold mb-0">{{ $thesis->title }}</h3>
+                        <span class="badge bg-soft-primary text-primary text-uppercase">
+                            {{ ucfirst(str_replace('_', ' ', $thesis->status)) }}
+                        </span>
+                    </div>
+                    <div class="hstack gap-3 text-muted mb-4">
+                        <div><i class="feather-user me-1"></i> <strong>{{ $thesis->student->user->name }}</strong></div>
+                        <div class="vr"></div>
+                        <div><i class="feather-user-check me-1"></i> Supervisor: {{ $thesis->supervisor->user->name ?? 'N/A' }}</div>
+                    </div>
+                    <p class="text-muted mb-0">Review thesis versions and leave feedback for the student.</p>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-8">
             <div class="card stretch stretch-full border-0 shadow-sm">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title fw-bold mb-0">Version History</h5>
-                    <span class="badge bg-soft-primary text-primary">{{ $versions->count() }} Versions</span>
+                    <h5 class="card-title fw-bold mb-0">Thesis Versions</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">Version</th>
-                                    <th>Uploaded</th>
-                                    <th>Status</th>
-                                    <th>Notes</th>
-                                    <th class="text-end pe-4">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($versions as $version)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <span class="fw-bold text-dark">v{{ $version->version_number }}</span>
-                                        </td>
-                                        <td>
-                                            <div class="d-flex flex-column">
-                                                <span class="fw-medium text-dark">{{ $version->created_at->format('M d, Y') }}</span>
-                                                <span class="fs-12 text-muted">{{ $version->created_at->diffForHumans() }}</span>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            @php
-                                                $statusClass = match($version->status) {
-                                                    'approved' => 'bg-success',
-                                                    'needs_changes' => 'bg-warning',
-                                                    'reviewed' => 'bg-info',
-                                                    default => 'bg-secondary',
-                                                };
-                                            @endphp
-                                            <span class="badge {{ $statusClass }} text-uppercase">
-                                                {{ str_replace('_', ' ', $version->status) }}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            @if($version->comments)
-                                                <span class="text-truncate d-inline-block" style="max-width: 220px;">
-                                                    {{ $version->comments }}
-                                                </span>
-                                            @else
-                                                <span class="text-muted fst-italic">No notes</span>
-                                            @endif
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <a href="{{ Storage::url($version->file_path) }}" target="_blank" class="btn btn-sm btn-light-brand" title="Download">
-                                                <i class="feather-download"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="text-center py-5">
-                                            <i class="feather-inbox fs-1 text-muted opacity-50 mb-3"></i>
-                                            <p class="text-muted mb-0">No thesis versions uploaded yet.</p>
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+                <div class="card-body">
+                    @forelse($thesis->versions->sortByDesc('version_number') as $version)
+                        <div class="border rounded p-3 mb-3">
+                            <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-semibold">Version v{{ $version->version_number }}</div>
+                                    <div class="text-muted small">Uploaded {{ $version->created_at->format('M d, Y') }}</div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-light text-dark text-uppercase">
+                                        {{ str_replace('_', ' ', $version->status) }}
+                                    </span>
+                                    <a href="{{ Storage::url($version->file_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="feather-download"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            @if($version->comments)
+                                <div class="mt-2 text-muted small">Student notes: {{ $version->comments }}</div>
+                            @endif
+
+                            <div class="row g-2 mt-3">
+                                <div class="col-md-12">
+                                    <form method="POST" action="{{ route('thesis.versions.status', $version) }}" class="d-flex gap-2">
+                                        @csrf
+                                        @method('PATCH')
+                                        <select name="status" class="form-select">
+                                            @foreach(\App\Models\ThesisVersion::STATUSES as $status)
+                                                <option value="{{ $status }}" @selected($version->status === $status)>
+                                                    {{ ucfirst(str_replace('_', ' ', $status)) }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="btn btn-primary">Update</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-muted text-center py-3">No versions uploaded yet.</div>
+                    @endforelse
                 </div>
             </div>
+
+        </div>
+
+        <div class="col-lg-4">
         </div>
     </div>
 
@@ -309,7 +275,7 @@
                             <div class="col-12 col-md-3">
                                 <select name="thesis_version_id" class="form-select">
                                     <option value="">General</option>
-                                    @foreach($versions as $version)
+                                    @foreach($thesis->versions->sortBy('version_number') as $version)
                                         <option value="{{ $version->id }}">Version v{{ $version->version_number }}</option>
                                     @endforeach
                                 </select>
@@ -352,4 +318,5 @@
             });
         });
     </script>
+
 </x-app-layout>
