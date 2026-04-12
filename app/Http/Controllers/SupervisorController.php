@@ -17,19 +17,31 @@ class SupervisorController extends Controller
             abort(403, 'User is not a supervisor profile');
         }
 
-        $theses = $supervisor->theses()->with(['student.user', 'proposals' => function($q){
-            $q->latest();
-        }])->get();
+        $groups = $supervisor->groups()
+            ->with(['department', 'students.user'])
+            ->withCount('students')
+            ->orderBy('name')
+            ->get();
 
-        $studentsWithoutThesis = $supervisor->students()
-            ->with(['user', 'group.students.thesis'])
-            ->get()
-            ->filter(function ($student) {
-                return !$student->accessibleThesis();
-            })
-            ->values();
+        $groupTheses = collect();
+        if ($groups->isNotEmpty()) {
+            $groupTheses = $supervisor->theses()
+                ->with('student.user')
+                ->whereIn('student_group_id', $groups->pluck('id'))
+                ->latest('id')
+                ->get()
+                ->groupBy('student_group_id')
+                ->map(function ($thesisCollection) {
+                    return $thesisCollection->first();
+                });
+        }
 
-        return view('supervisor.students.index', compact('theses', 'studentsWithoutThesis'));
+        $ungroupedStudents = $supervisor->students()
+            ->whereNull('student_group_id')
+            ->with(['user', 'thesis'])
+            ->get();
+
+        return view('supervisor.students.index', compact('groups', 'ungroupedStudents', 'groupTheses'));
     }
 
     public function showThesis(Thesis $thesis)

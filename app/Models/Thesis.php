@@ -13,6 +13,11 @@ class Thesis extends Model
         return $this->belongsTo(Student::class);
     }
 
+    public function group()
+    {
+        return $this->belongsTo(StudentGroup::class, 'student_group_id');
+    }
+
     public function supervisor()
     {
         return $this->belongsTo(Supervisor::class);
@@ -26,6 +31,11 @@ class Thesis extends Model
     public function versions()
     {
         return $this->hasMany(ThesisVersion::class);
+    }
+
+    public function units()
+    {
+        return $this->hasMany(ThesisUnit::class);
     }
 
     public function feedbacks()

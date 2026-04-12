@@ -9,6 +9,23 @@ class Student extends Model
 {
     protected $guarded = [];
 
+    public static function generateStudentIdNumber(int $userId): string
+    {
+        $base = 'STD' . now()->format('Y') . str_pad((string) $userId, 6, '0', STR_PAD_LEFT);
+
+        if (!static::where('student_id_number', $base)->exists()) {
+            return $base;
+        }
+
+        $suffix = 1;
+        do {
+            $candidate = $base . '-' . str_pad((string) $suffix, 2, '0', STR_PAD_LEFT);
+            $suffix++;
+        } while (static::where('student_id_number', $candidate)->exists());
+
+        return $candidate;
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -41,9 +58,7 @@ class Student extends Model
         }
 
         return Thesis::query()
-            ->whereHas('student', function ($query) {
-                $query->where('student_group_id', $this->student_group_id);
-            })
+            ->where('student_group_id', $this->student_group_id)
             ->latest('id')
             ->first();
     }

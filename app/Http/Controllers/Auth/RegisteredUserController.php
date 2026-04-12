@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -43,9 +44,9 @@ class RegisteredUserController extends Controller
         ]);
 
         // Create student profile automatically
-        \App\Models\Student::create([
+           Student::create([
              'user_id' => $user->id,
-             'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999), // Temporary ID generation
+               'student_id_number' => Student::generateStudentIdNumber($user->id),
              'program' => 'General', // Default program
         ]);
 

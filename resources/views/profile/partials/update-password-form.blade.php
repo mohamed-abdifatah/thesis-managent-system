@@ -1,10 +1,5 @@
 <section>
-    <div class="mb-4">
-        <h5 class="fw-bold text-dark mb-1">{{ __('Update Password') }}</h5>
-        <p class="text-muted small">
-            {{ __('Ensure your account is using a long, random password to stay secure.') }}
-        </p>
-    </div>
+    <p class="text-muted small mb-4">{{ __('Ensure your account is using a long, random password to stay secure.') }}</p>
 
     <form method="post" action="{{ route('password.update') }}">
         @csrf

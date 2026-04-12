@@ -1,62 +1,190 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Librarian Dashboard') }}
-        </h2>
-    </x-slot>
+    @php
+        $completedThesisQuery = \App\Models\Thesis::query()->where('status', 'completed');
 
-    <!-- Stats Widgets -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        <!-- Archived Theses -->
-        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-purple-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 p-3 rounded-full bg-purple-100 text-purple-500">
-                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500 truncate">Archived Theses</p>
-                    <p class="text-2xl font-semibold text-gray-900">0</p>
+        $catalogReadyCount = (clone $completedThesisQuery)
+            ->whereHas('defense', fn ($query) => $query->where('status', 'completed'))
+            ->count();
+
+        $pendingValidationCount = (clone $completedThesisQuery)
+            ->where(function ($query) {
+                $query->doesntHave('defense')
+                    ->orWhereHas('defense', fn ($defenseQuery) => $defenseQuery->where('status', '!=', 'completed'));
+            })
+            ->count();
+
+        $digitalCopyCount = \App\Models\ThesisVersion::count();
+        $totalCatalogCount = (clone $completedThesisQuery)->count();
+
+        $catalogQueue = \App\Models\Thesis::with(['student.user', 'supervisor.user', 'defense'])
+            ->where('status', 'completed')
+            ->latest()
+            ->take(8)
+            ->get();
+    @endphp
+
+    <div class="ta-page-head">
+        <div>
+            <span class="ta-page-kicker">Library Workspace</span>
+            <h1 class="ta-page-title">Librarian Dashboard</h1>
+            <p class="ta-page-subtitle">Review completed theses, validate defense completion, and keep the digital catalog current.</p>
+        </div>
+        <div class="ta-page-actions">
+            <a href="{{ route('profile.edit') }}" class="ta-chip-link">
+                <i class="feather-user"></i>
+                Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Catalog Ready</p>
+                        <h3 class="mb-0">{{ $catalogReadyCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-success text-success rounded-3">
+                        <i class="feather-check-circle"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Pending Archives -->
-        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-yellow-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 p-3 rounded-full bg-yellow-100 text-yellow-500">
-                    <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500 truncate">Pending Review</p>
-                    <p class="text-2xl font-semibold text-gray-900">0</p>
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Pending Validation</p>
+                        <h3 class="mb-0">{{ $pendingValidationCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-warning text-warning rounded-3">
+                        <i class="feather-alert-triangle"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-         <!-- Total System Users -->
-        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-blue-500">
-             <div class="flex items-center">
-                <div class="flex-shrink-0 p-3 rounded-full bg-blue-100 text-blue-500">
-                     <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Digital Copies</p>
+                        <h3 class="mb-0">{{ $digitalCopyCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded-3">
+                        <i class="feather-file-text"></i>
+                    </div>
                 </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500 truncate">Active Users</p>
-                    <p class="text-2xl font-semibold text-gray-900">{{ \App\Models\User::count() }}</p>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Completed Theses</p>
+                        <h3 class="mb-0">{{ $totalCatalogCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-info text-info rounded-3">
+                        <i class="feather-archive"></i>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Content Columns -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Catalog List -->
-        <div class="bg-white shadow rounded-lg mb-6 lg:mb-0 lg:col-span-2">
-            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="font-bold text-gray-800">Library Catalog</h3>
-                 <a href="#" class="text-sm text-indigo-500 hover:text-indigo-600">View All</a>
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Catalog Processing Queue</h3>
+                    <span class="text-muted small">{{ $catalogQueue->count() }} recent entries</span>
+                </div>
+                <div class="ta-table-shell">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Thesis</th>
+                                <th>Student</th>
+                                <th>Supervisor</th>
+                                <th>Defense</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($catalogQueue as $thesis)
+                                @php
+                                    $isDefenseComplete = $thesis->defense && $thesis->defense->status === 'completed';
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <span class="fw-semibold d-inline-block text-truncate" style="max-width: 260px;">
+                                            {{ \Illuminate\Support\Str::limit($thesis->title, 60) }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $thesis->student->user->name ?? 'N/A' }}</td>
+                                    <td>{{ $thesis->supervisor->user->name ?? 'N/A' }}</td>
+                                    <td>
+                                        <span class="small text-muted">
+                                            {{ optional(optional($thesis->defense)->scheduled_at)->format('M d, Y') ?? 'Unscheduled' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($isDefenseComplete)
+                                            <span class="badge bg-soft-success text-success">Ready</span>
+                                        @else
+                                            <span class="badge bg-soft-warning text-warning">Needs Validation</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        No completed theses are ready for catalog processing yet.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
-             <div class="p-6 text-center text-gray-500">
-                 No published theses in the catalog yet.
+        </div>
+
+        <div class="col-xl-4">
+            <div class="ta-panel mb-4">
+                <div class="ta-panel-head">
+                    <h3>Workflow Guide</h3>
+                </div>
+                <div class="ta-panel-body">
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">1. Validate Defense Completion</p>
+                        <p class="mb-0 small">Ensure the defense session is marked completed before catalog publication.</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="small text-muted mb-1">2. Confirm Digital Version</p>
+                        <p class="mb-0 small">Verify at least one thesis file version exists for the final archive copy.</p>
+                    </div>
+                    <div>
+                        <p class="small text-muted mb-1">3. Final Catalog Check</p>
+                        <p class="mb-0 small">Review title, student identity, and supervisor data for catalog accuracy.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Quick Links</h3>
+                </div>
+                <div class="ta-panel-body d-grid gap-2">
+                    <a href="{{ route('dashboard') }}" class="ta-chip-link justify-content-between">
+                        Dashboard Home <i class="feather-arrow-right"></i>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="ta-chip-link justify-content-between">
+                        Profile Settings <i class="feather-arrow-right"></i>
+                    </a>
+                </div>
             </div>
         </div>
     </div>

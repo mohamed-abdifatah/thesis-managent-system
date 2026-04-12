@@ -20,6 +20,11 @@ class ThesisVersion extends Model
         return $this->belongsTo(Thesis::class);
     }
 
+    public function unit()
+    {
+        return $this->belongsTo(ThesisUnit::class, 'thesis_unit_id');
+    }
+
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class);

@@ -135,15 +135,36 @@
             border-bottom: 1px solid rgba(27, 31, 36, 0.08);
         }
 
+        .unit-loader {
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(27, 31, 36, 0.2);
+            border-top-color: #1b84ff;
+            border-radius: 50%;
+            animation: unit-spin 0.7s linear infinite;
+        }
+
+        .unit-create-wrap {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        @keyframes unit-spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
     </style>
     <!-- Page Header -->
     <div class="page-header d-flex align-items-center justify-content-between mb-4">
         <div>
-            <h2 class="page-header-title h3 mb-0">Thesis Versions</h2>
+            <h2 class="page-header-title h3 mb-0">Thesis Units</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Versions</li>
+                    <li class="breadcrumb-item active" aria-current="page">Units</li>
                 </ol>
             </nav>
         </div>
@@ -158,7 +179,7 @@
         <div class="col-lg-4">
             <div class="card stretch stretch-full border-0 shadow-sm">
                 <div class="card-header">
-                    <h5 class="card-title fw-bold mb-0">Upload New Version</h5>
+                    <h5 class="card-title fw-bold mb-0">Upload Unit Document</h5>
                 </div>
                 <div class="card-body">
                     <form method="POST" action="{{ route('thesis.versions.store') }}" enctype="multipart/form-data">
@@ -171,12 +192,38 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="row g-2 unit-binding" data-unit-binding>
+                            <div class="col-12">
+                                <label for="thesis_unit_id" class="form-label fw-semibold d-flex align-items-center gap-2">
+                                    <span>Unit</span>
+                                    <span class="unit-loader d-none" data-unit-list-spinner></span>
+                                    <span class="unit-loader d-none" data-unit-create-spinner></span>
+                                </label>
+                                <select id="thesis_unit_id" name="thesis_unit_id" class="form-select @error('thesis_unit_id') is-invalid @enderror js-unit-select">
+                                    <option value="">Select existing unit...</option>
+                                    @foreach($units as $unit)
+                                        <option value="{{ $unit->id }}" @selected(old('thesis_unit_id') == $unit->id)>{{ $unit->name }}</option>
+                                    @endforeach
+                                    <option value="__create__">+ Create new unit...</option>
+                                </select>
+                                @error('thesis_unit_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-12">
+                                <label for="unit_number" class="form-label fw-semibold">Unit Number <span class="text-danger">*</span></label>
+                                <input type="number" min="1" max="999" id="unit_number" name="unit_number" class="form-control @error('unit_number') is-invalid @enderror" value="{{ old('unit_number', 1) }}" required>
+                                @error('unit_number')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
                         <div class="mb-3">
                             <label for="comments" class="form-label fw-semibold">Notes (Optional)</label>
                             <textarea id="comments" name="comments" rows="3" class="form-control" placeholder="Add a short summary of changes..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
-                            <i class="feather-upload-cloud me-2"></i> Upload Version
+                            <i class="feather-upload-cloud me-2"></i> Upload Unit
                         </button>
                     </form>
                 </div>
@@ -186,15 +233,17 @@
         <div class="col-lg-8">
             <div class="card stretch stretch-full border-0 shadow-sm">
                 <div class="card-header d-flex align-items-center justify-content-between">
-                    <h5 class="card-title fw-bold mb-0">Version History</h5>
-                    <span class="badge bg-soft-primary text-primary">{{ $versions->count() }} Versions</span>
+                    <h5 class="card-title fw-bold mb-0">Unit History</h5>
+                    <span class="badge bg-soft-primary text-primary">{{ $versions->count() }} Entries</span>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0">
                             <thead class="bg-light">
                                 <tr>
-                                    <th class="ps-4">Version</th>
+                                    <th>Unit</th>
+                                    <th>No.</th>
+                                    <th>Document</th>
                                     <th>Uploaded</th>
                                     <th>Status</th>
                                     <th>Notes</th>
@@ -204,8 +253,16 @@
                             <tbody>
                                 @forelse($versions as $version)
                                     <tr>
-                                        <td class="ps-4">
-                                            <span class="fw-bold text-dark">v{{ $version->version_number }}</span>
+                                        <td>
+                                            <span class="badge bg-soft-info text-info">{{ $version->unit?->name ?? 'General' }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-semibold">{{ $version->unit_number ?? '-' }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{{ Storage::url($version->file_path) }}" target="_blank" class="btn btn-sm btn-light-brand" title="Open Document">
+                                                <i class="feather-file-text"></i>
+                                            </a>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">
@@ -236,6 +293,9 @@
                                             @endif
                                         </td>
                                         <td class="text-end pe-4">
+                                            <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#editVersionModal{{ $version->id }}" title="Edit Unit Entry">
+                                                <i class="feather-edit"></i>
+                                            </button>
                                             <a href="{{ Storage::url($version->file_path) }}" target="_blank" class="btn btn-sm btn-light-brand" title="Download">
                                                 <i class="feather-download"></i>
                                             </a>
@@ -243,9 +303,9 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="text-center py-5">
+                                        <td colspan="7" class="text-center py-5">
                                             <i class="feather-inbox fs-1 text-muted opacity-50 mb-3"></i>
-                                            <p class="text-muted mb-0">No thesis versions uploaded yet.</p>
+                                            <p class="text-muted mb-0">No unit documents uploaded yet.</p>
                                         </td>
                                     </tr>
                                 @endforelse
@@ -256,6 +316,59 @@
             </div>
         </div>
     </div>
+
+    @foreach($versions as $version)
+        <div class="modal fade" id="editVersionModal{{ $version->id }}" tabindex="-1" aria-hidden="true" data-bs-backdrop="false">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit {{ $version->unit?->name ?? 'Unit' }} {{ $version->unit_number ?? '' }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{{ route('thesis.versions.update', $version) }}" enctype="multipart/form-data">
+                        @csrf
+                        @method('PATCH')
+                        <div class="modal-body">
+                            <div class="row g-3 unit-binding" data-unit-binding>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold d-flex align-items-center gap-2">
+                                        <span>Use Existing Unit</span>
+                                        <span class="unit-loader d-none" data-unit-list-spinner></span>
+                                        <span class="unit-loader d-none" data-unit-create-spinner></span>
+                                    </label>
+                                    <select name="thesis_unit_id" class="form-select js-unit-select">
+                                        <option value="">Select existing unit...</option>
+                                        @foreach($units as $unit)
+                                            <option value="{{ $unit->id }}" @selected($version->thesis_unit_id === $unit->id)>{{ $unit->name }}</option>
+                                        @endforeach
+                                        <option value="__create__">+ Create new unit...</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold">Unit Number <span class="text-danger">*</span></label>
+                                    <input type="number" min="1" max="999" name="unit_number" class="form-control" value="{{ $version->unit_number ?? 1 }}" required>
+                                </div>
+                                <div class="col-md-8">
+                                    <label class="form-label fw-semibold">Replace Document (Optional)</label>
+                                    <input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Notes</label>
+                                    <textarea name="comments" rows="3" class="form-control" placeholder="Update notes for this version...">{{ $version->comments }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="feather-save me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    @endforeach
 
     <button type="button" class="btn btn-primary chat-fab" data-chat-toggle="thesis-chat" data-chat-button>
         <i class="feather-message-circle me-1"></i> Chat
@@ -289,7 +402,7 @@
                                         <div class="mb-1"><span class="badge bg-light text-dark">{{ $feedback->topic }}</span></div>
                                     @endif
                                     @if($feedback->thesisVersion)
-                                        <div class="mb-1"><span class="badge bg-soft-primary text-primary">v{{ $feedback->thesisVersion->version_number }}</span></div>
+                                        <div class="mb-1"><span class="badge bg-soft-primary text-primary">{{ $feedback->thesisVersion->unit?->name ?? 'Unit' }} {{ $feedback->thesisVersion->unit_number ?? '' }}</span></div>
                                     @endif
                                     <div>{{ $feedback->comment }}</div>
                                 </div>
@@ -310,7 +423,7 @@
                                 <select name="thesis_version_id" class="form-select">
                                     <option value="">General</option>
                                     @foreach($versions as $version)
-                                        <option value="{{ $version->id }}">Version v{{ $version->version_number }}</option>
+                                        <option value="{{ $version->id }}">{{ $version->unit?->name ?? 'Unit' }} {{ $version->unit_number ?? '' }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -331,6 +444,140 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const unitsListUrl = '{{ route('thesis.versions.units.list') }}';
+            const unitsCreateUrl = '{{ route('thesis.versions.units.store') }}';
+            const csrfToken = '{{ csrf_token() }}';
+
+            const syncUnitOptions = (allSelects, units) => {
+                allSelects.forEach((select) => {
+                    const selectedValue = select.value;
+                    select.innerHTML = '<option value="">Select existing unit...</option>';
+
+                    units.forEach((unit) => {
+                        const option = document.createElement('option');
+                        option.value = String(unit.id);
+                        option.textContent = unit.name;
+                        select.appendChild(option);
+                    });
+
+                    const createOption = document.createElement('option');
+                    createOption.value = '__create__';
+                    createOption.textContent = '+ Create new unit...';
+                    select.appendChild(createOption);
+
+                    if (selectedValue && selectedValue !== '__create__' && [...select.options].some((opt) => opt.value === selectedValue)) {
+                        select.value = selectedValue;
+                    }
+                });
+            };
+
+            const fetchUnits = async (spinner) => {
+                spinner?.classList.remove('d-none');
+                try {
+                    const response = await fetch(unitsListUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to load units');
+                    }
+
+                    const payload = await response.json();
+                    return payload.data ?? [];
+                } finally {
+                    spinner?.classList.add('d-none');
+                }
+            };
+
+            const createUnit = async (name, spinner) => {
+                spinner?.classList.remove('d-none');
+                try {
+                    const response = await fetch(unitsCreateUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                        },
+                        body: JSON.stringify({ name }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to create unit');
+                    }
+
+                    const payload = await response.json();
+                    return payload.data;
+                } finally {
+                    spinner?.classList.add('d-none');
+                }
+            };
+
+            const bindUnitControls = (container, allSelects) => {
+                const select = container.querySelector('.js-unit-select');
+                const listSpinner = container.querySelector('[data-unit-list-spinner]');
+                const createSpinner = container.querySelector('[data-unit-create-spinner]');
+
+                if (!select) {
+                    return;
+                }
+
+                let isLoadedOnce = false;
+
+                const loadUnitsIntoSelects = async () => {
+                    const units = await fetchUnits(listSpinner);
+                    syncUnitOptions(allSelects, units);
+                    isLoadedOnce = true;
+                };
+
+                const openLoader = async () => {
+                    if (!isLoadedOnce) {
+                        await loadUnitsIntoSelects();
+                        return;
+                    }
+
+                    // Refresh list on open so users see new units created in other dialogs.
+                    const units = await fetchUnits(listSpinner);
+                    syncUnitOptions(allSelects, units);
+                };
+
+                select.addEventListener('focus', openLoader);
+                select.addEventListener('mousedown', () => {
+                    void openLoader();
+                });
+
+                select.addEventListener('change', async () => {
+                    if (select.value !== '__create__') {
+                        return;
+                    }
+
+                    const name = window.prompt('Enter new unit name (e.g. Chapter):');
+                    if (!name || !name.trim()) {
+                        select.value = '';
+                        return;
+                    }
+
+                    try {
+                        const created = await createUnit(name.trim(), createSpinner);
+                        const units = await fetchUnits(listSpinner);
+                        syncUnitOptions(allSelects, units);
+                        if (created?.id) {
+                            select.value = String(created.id);
+                        } else {
+                            select.value = '';
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        select.value = '';
+                    }
+                });
+            };
+
+            const unitBindings = document.querySelectorAll('[data-unit-binding]');
+            const allUnitSelects = document.querySelectorAll('.js-unit-select');
+            unitBindings.forEach((el) => bindUnitControls(el, allUnitSelects));
+
             const buttons = document.querySelectorAll('[data-chat-toggle]');
             buttons.forEach((button) => {
                 button.addEventListener('click', () => {

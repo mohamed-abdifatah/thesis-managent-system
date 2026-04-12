@@ -22,4 +22,9 @@ class StudentGroup extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    public function theses()
+    {
+        return $this->hasMany(Thesis::class, 'student_group_id');
+    }
 }

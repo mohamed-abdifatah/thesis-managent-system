@@ -1,46 +1,48 @@
 <x-app-layout>
-    <!-- [ page-header ] start -->
-    <div class="page-header">
-        <div class="page-header-left d-flex align-items-center">
-            <div class="page-header-title">
-                <h5 class="m-b-10">Profile</h5>
-            </div>
-            <ul class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                <li class="breadcrumb-item">Account Settings</li>
-            </ul>
+    <div class="ta-page-head">
+        <div>
+            <span class="ta-page-kicker">Account</span>
+            <h1 class="ta-page-title">Profile Settings</h1>
+            <p class="ta-page-subtitle">Update your profile details, password, and account security preferences from one place.</p>
+        </div>
+        <div class="ta-page-actions">
+            <a href="{{ route('dashboard') }}" class="ta-chip-link">
+                <i class="feather-home"></i>
+                Back to Dashboard
+            </a>
         </div>
     </div>
-    <!-- [ page-header ] end -->
 
-    <!-- [ Main Content ] start -->
-    <div class="main-content">
-        <div class="row">
-            <div class="col-xl-6">
-                <!-- Profile Information -->
-                <div class="card stretch stretch-full border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        @include('profile.partials.update-profile-information-form')
-                    </div>
+    <div class="row g-4">
+        <div class="col-xl-6">
+            <div class="ta-panel mb-4">
+                <div class="ta-panel-head">
+                    <h3>Profile Information</h3>
                 </div>
-
-                <!-- Delete Account -->
-                <div class="card stretch stretch-full border-0 shadow-sm">
-                    <div class="card-body">
-                        @include('profile.partials.delete-user-form')
-                    </div>
+                <div class="ta-panel-body">
+                    @include('profile.partials.update-profile-information-form')
                 </div>
             </div>
 
-            <div class="col-xl-6">
-                <!-- Update Password -->
-                <div class="card stretch stretch-full border-0 shadow-sm">
-                    <div class="card-body">
-                        @include('profile.partials.update-password-form')
-                    </div>
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Danger Zone</h3>
+                </div>
+                <div class="ta-panel-body">
+                    @include('profile.partials.delete-user-form')
                 </div>
             </div>
         </div>
+
+        <div class="col-xl-6">
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Update Password</h3>
+                </div>
+                <div class="ta-panel-body">
+                    @include('profile.partials.update-password-form')
+                </div>
+            </div>
+        </div>
     </div>
-    <!-- [ Main Content ] end -->
 </x-app-layout>

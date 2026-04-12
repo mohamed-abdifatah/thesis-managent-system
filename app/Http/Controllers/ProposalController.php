@@ -72,6 +72,7 @@ class ProposalController extends Controller
             // 1. Create Thesis record (Container)
             $thesis = Thesis::create([
                 'student_id' => $student->id,
+                'student_group_id' => $student->student_group_id,
                 'title' => $request->title,
                 'status' => 'proposal_pending',
                 'supervisor_id' => $student->supervisor_id,

@@ -35,6 +35,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::resource('proposals', ProposalController::class);
     Route::get('/thesis/versions', [ThesisVersionController::class, 'index'])->name('thesis.versions.index');
     Route::post('/thesis/versions', [ThesisVersionController::class, 'store'])->name('thesis.versions.store');
+    Route::get('/thesis/versions/units', [ThesisVersionController::class, 'unitsList'])
+        ->middleware('role:student')
+        ->name('thesis.versions.units.list');
+    Route::post('/thesis/versions/units', [ThesisVersionController::class, 'unitStore'])
+        ->middleware('role:student')
+        ->name('thesis.versions.units.store');
+    Route::patch('/thesis/versions/{version}', [ThesisVersionController::class, 'updateStudent'])
+        ->middleware('role:student')
+        ->name('thesis.versions.update');
     Route::patch('/thesis/versions/{version}/status', [ThesisVersionController::class, 'updateStatus'])
         ->middleware('role:supervisor,examiner')
         ->name('thesis.versions.status');

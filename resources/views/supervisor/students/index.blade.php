@@ -1,5 +1,4 @@
 <x-app-layout>
-    <!-- Page Header -->
     <div class="page-header d-flex align-items-center justify-content-between mb-4">
         <div>
             <h2 class="page-header-title h3 mb-0">My Assigned Students</h2>
@@ -12,10 +11,9 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="row">
         <div class="col-12">
-            @if($theses->isEmpty() && $studentsWithoutThesis->isEmpty())
+            @if($groups->isEmpty() && $ungroupedStudents->isEmpty())
                 <div class="card stretch stretch-full border-0 shadow-sm">
                     <div class="card-body text-center py-5">
                         <div class="mb-3">
@@ -27,78 +25,118 @@
                 </div>
             @else
                 <div class="row g-4">
-                    @foreach($theses as $thesis)
+                    @foreach($groups as $group)
+                        @php
+                            $groupThesis = $groupTheses->get($group->id);
+                            $membersCollapseId = 'group-members-' . $group->id;
+                        @endphp
                         <div class="col-md-6 col-xl-4">
-                            <div class="card stretch stretch-full border-0 shadow-sm h-100 hover-shadow transition-all">
-                                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="avatar-text bg-primary-subtle text-primary rounded-3">
-                                            {{ substr($thesis->student->user->name, 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <h6 class="fw-bold text-dark mb-1">{{ $thesis->student->user->name }}</h6>
-                                            <span class="text-muted small">{{ $thesis->student->program ?? 'General Program' }}</span>
-                                        </div>
+                            <div class="card stretch stretch-full border-0 shadow-sm h-100">
+                                <div class="card-header bg-white d-flex align-items-start justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">{{ $group->name }}</h5>
+                                        <p class="text-muted small mb-0">
+                                            {{ $group->department?->name ?? 'Department not set' }}
+                                            @if($group->program)
+                                                • {{ $group->program }}
+                                            @endif
+                                        </p>
                                     </div>
-                                    <span class="badge {{ $thesis->status === 'completed' ? 'bg-success-subtle text-success' : ($thesis->status === 'rejected' ? 'bg-danger-subtle text-danger' : 'bg-primary-subtle text-primary') }}">
-                                        {{ ucfirst(str_replace('_', ' ', $thesis->status)) }}
-                                    </span>
+                                    <span class="badge bg-soft-primary text-primary">{{ $group->students_count }} Students</span>
                                 </div>
                                 <div class="card-body">
-                                    <h5 class="fw-bold text-dark mb-3 text-truncate" title="{{ $thesis->title }}">{{ $thesis->title }}</h5>
-                                    
-                                    <div class="p-3 bg-light rounded border mb-3">
-                                        @php $latestProposal = $thesis->proposals->first(); @endphp
-                                        @if($latestProposal)
-                                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                                <small class="text-uppercase text-muted fw-bold" style="font-size: 0.7rem;">Latest Proposal</small>
-                                                <span class="badge {{ $latestProposal->status === 'approved' ? 'bg-success' : ($latestProposal->status === 'rejected' ? 'bg-danger' : 'bg-warning') }}">
-                                                    {{ ucfirst($latestProposal->status) }}
-                                                </span>
+                                    @if($groupThesis)
+                                        @php
+                                            $groupStatusClass = match($groupThesis->status) {
+                                                'completed' => 'bg-soft-success text-success',
+                                                'rejected' => 'bg-soft-danger text-danger',
+                                                default => 'bg-soft-warning text-warning',
+                                            };
+                                        @endphp
+                                        <p class="text-muted small mb-1">Shared Group Thesis</p>
+                                        <p class="fw-semibold mb-2" title="{{ $groupThesis->title }}">
+                                            {{ \Illuminate\Support\Str::limit($groupThesis->title, 68) }}
+                                        </p>
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                            <span class="badge {{ $groupStatusClass }}">{{ ucfirst(str_replace('_', ' ', $groupThesis->status)) }}</span>
+                                            <a href="{{ route('supervisor.theses.show', $groupThesis) }}" class="btn btn-sm btn-primary">
+                                                Manage Group Thesis
+                                            </a>
+                                        </div>
+                                    @else
+                                        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                            <p class="text-muted small mb-0">No shared thesis submitted for this group yet.</p>
+                                            <button class="btn btn-sm btn-light" disabled>Awaiting Group Proposal</button>
+                                        </div>
+                                    @endif
+
+                                    @if($group->students->isEmpty())
+                                        <p class="text-muted mb-0">No students in this group yet.</p>
+                                    @else
+                                        <button
+                                            type="button"
+                                            class="btn btn-sm btn-outline-primary w-100"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#{{ $membersCollapseId }}"
+                                            aria-expanded="false"
+                                            aria-controls="{{ $membersCollapseId }}"
+                                        >
+                                            <i class="feather-users me-1"></i>
+                                            View Members ({{ $group->students_count }})
+                                        </button>
+
+                                        <div class="collapse mt-3" id="{{ $membersCollapseId }}">
+                                            <div class="d-grid gap-2">
+                                                @foreach($group->students as $student)
+                                                    <div class="d-flex align-items-center justify-content-between py-2 px-2 rounded-2 bg-light">
+                                                        <div>
+                                                            <div class="fw-semibold">{{ $student->user->name ?? 'Unknown Student' }}</div>
+                                                            <small class="text-muted">{{ $student->student_id_number }}</small>
+                                                        </div>
+                                                        <span class="badge bg-soft-primary text-primary">Member</span>
+                                                    </div>
+                                                @endforeach
                                             </div>
-                                            <small class="text-muted d-block">
-                                                <i class="feather-clock me-1"></i> {{ $latestProposal->created_at->diffForHumans() }}
-                                            </small>
-                                        @else
-                                            <small class="text-muted fst-italic">No proposal submitted yet.</small>
-                                        @endif
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-top-0 pt-0 pb-4">
-                                    <a href="{{ route('supervisor.theses.show', $thesis) }}" class="btn btn-primary w-100">
-                                        Manage Thesis <i class="feather-arrow-right ms-2"></i>
-                                    </a>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         </div>
                     @endforeach
 
-                    @foreach($studentsWithoutThesis as $student)
+                    @if($ungroupedStudents->isNotEmpty())
                         <div class="col-md-6 col-xl-4">
                             <div class="card stretch stretch-full border-0 shadow-sm h-100">
-                                <div class="card-header bg-white border-bottom-0 pt-4 pb-0 d-flex justify-content-between align-items-start">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="avatar-text bg-secondary-subtle text-secondary rounded-3">
-                                            {{ substr($student->user->name, 0, 1) }}
-                                        </div>
-                                        <div>
-                                            <h6 class="fw-bold text-dark mb-1">{{ $student->user->name }}</h6>
-                                            <span class="text-muted small">{{ $student->program ?? 'General Program' }}</span>
-                                        </div>
+                                <div class="card-header bg-white d-flex align-items-start justify-content-between">
+                                    <div>
+                                        <h5 class="fw-bold mb-1">Ungrouped Students</h5>
+                                        <p class="text-muted small mb-0">Assigned directly to you without a group.</p>
                                     </div>
-                                    <span class="badge bg-soft-warning text-warning">No Thesis Yet</span>
+                                    <span class="badge bg-soft-dark text-dark">{{ $ungroupedStudents->count() }} Students</span>
                                 </div>
                                 <div class="card-body">
-                                    <p class="text-muted mb-0">Student is assigned but has not submitted a proposal.</p>
-                                </div>
-                                <div class="card-footer bg-white border-top-0 pt-0 pb-4">
-                                    <button class="btn btn-light w-100" disabled>
-                                        Awaiting Proposal
-                                    </button>
+                                    <div class="d-grid gap-2">
+                                        @foreach($ungroupedStudents as $student)
+                                            <div class="d-flex align-items-center justify-content-between py-2 px-2 rounded-2 bg-light">
+                                                <div>
+                                                    <div class="fw-semibold">{{ $student->user->name ?? 'Unknown Student' }}</div>
+                                                    <small class="text-muted">{{ $student->student_id_number }}</small>
+                                                </div>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    @if($student->thesis)
+                                                        <span class="badge bg-soft-success text-success">{{ ucfirst(str_replace('_', ' ', $student->thesis->status)) }}</span>
+                                                        <a href="{{ route('supervisor.theses.show', $student->thesis) }}" class="btn btn-sm btn-light-brand">Manage</a>
+                                                    @else
+                                                        <span class="badge bg-soft-warning text-warning">No Thesis</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    @endif
                 </div>
             @endif
         </div>

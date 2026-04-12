@@ -1,169 +1,244 @@
 <x-app-layout>
-    <!-- Page Header -->
-    <div class="page-header d-flex align-items-center justify-content-between mb-4">
+    @php
+        $supervisor = auth()->user()->supervisor;
+        $groups = $supervisor
+            ? $supervisor->groups()->with(['department', 'students.user'])->withCount('students')->orderBy('name')->take(8)->get()
+            : collect();
+
+        $groupIds = $groups->pluck('id');
+        $groupTheses = collect();
+        if ($supervisor && $groupIds->isNotEmpty()) {
+            $groupTheses = \App\Models\Thesis::query()
+                ->with(['proposals' => fn ($query) => $query->latest()])
+                ->where('supervisor_id', $supervisor->id)
+                ->whereIn('student_group_id', $groupIds)
+                ->latest('id')
+                ->get()
+                ->groupBy('student_group_id')
+                ->map(fn ($thesisCollection) => $thesisCollection->first());
+        }
+
+        $groupCount = $groups->count();
+        $supervisedStudentCount = $supervisor ? $supervisor->students()->count() : 0;
+        $activeGroupCount = $groupTheses->filter(function ($thesis) {
+            return in_array($thesis->status, ['proposal_approved', 'in_progress', 'ready_for_defense'], true);
+        })->count();
+
+        $pendingReviewCount = $supervisor
+            ? \App\Models\Proposal::whereHas('thesis', fn ($query) => $query->where('supervisor_id', $supervisor->id))
+                ->whereIn('status', ['pending', 'revision_required'])
+                ->count()
+            : 0;
+
+        $upcomingDefenseCount = $supervisor
+            ? \App\Models\DefenseSession::whereHas('thesis', fn ($query) => $query->where('supervisor_id', $supervisor->id))
+                ->where('scheduled_at', '>=', now())
+                ->count()
+            : 0;
+
+        $groupsWaitingForProposal = max($groupCount - $groupTheses->count(), 0);
+    @endphp
+
+    <div class="ta-page-head">
         <div>
-            <h2 class="page-header-title h3 mb-0">Supervisor Dashboard</h2>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
-                </ol>
-            </nav>
+            <span class="ta-page-kicker">Supervisor Workspace</span>
+            <h1 class="ta-page-title">Supervision Dashboard</h1>
+            <p class="ta-page-subtitle">Follow your student pipeline, review pending proposals, and keep defense timelines on track.</p>
         </div>
-        <div>
-            <span class="text-muted small">Welcome back, <strong>{{ auth()->user()->name }}</strong>!</span>
+        <div class="ta-page-actions">
+            <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link">
+                <i class="feather-users"></i>
+                My Students
+            </a>
+            <a href="{{ route('defense.schedule') }}" class="ta-chip-link">
+                <i class="feather-calendar"></i>
+                Defense Schedule
+            </a>
         </div>
     </div>
 
-    <!-- Stats Widgets -->
     <div class="row g-4 mb-4">
-        <!-- Assigned Students -->
-        <div class="col-xxl-4 col-md-4">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="me-3">
-                            <h5 class="text-muted small text-uppercase fw-bold mb-1">My Students</h5>
-                            <h2 class="mb-0 text-dark fw-bold display-6">
-                                {{ auth()->user()->supervisor ? auth()->user()->supervisor->theses()->count() : 0 }}
-                            </h2>
-                        </div>
-                        <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded-3">
-                            <i class="feather-users" style="font-size: 1.5rem;"></i>
-                        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Assigned Groups</p>
+                        <h3 class="mb-0">{{ $groupCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded-3">
+                        <i class="feather-users"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Pending Reviews -->
-        <div class="col-xxl-4 col-md-4">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="me-3">
-                            <h5 class="text-muted small text-uppercase fw-bold mb-1">Pending Reviews</h5>
-                            <h2 class="mb-0 text-dark fw-bold display-6">
-                                @php
-                                    $pendingCount = auth()->user()->supervisor ? 
-                                        auth()->user()->supervisor->theses()->whereHas('proposals', function($q) {
-                                            $q->where('status', 'pending');
-                                        })->count() : 0;
-                                @endphp
-                                {{ $pendingCount }}
-                            </h2>
-                        </div>
-                        <div class="avatar-text avatar-lg bg-soft-warning text-warning rounded-3">
-                            <i class="feather-clock" style="font-size: 1.5rem;"></i>
-                        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Supervised Students</p>
+                        <h3 class="mb-0">{{ $supervisedStudentCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-success text-success rounded-3">
+                        <i class="feather-user-check"></i>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Completed Theses -->
-        <div class="col-xxl-4 col-md-4">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="me-3">
-                            <h5 class="text-muted small text-uppercase fw-bold mb-1">Completed Theses</h5>
-                            <h2 class="mb-0 text-dark fw-bold display-6">
-                                {{ auth()->user()->supervisor ? auth()->user()->supervisor->theses()->where('status', 'completed')->count() : 0 }}
-                            </h2>
-                        </div>
-                        <div class="avatar-text avatar-lg bg-soft-success text-success rounded-3">
-                            <i class="feather-check-circle" style="font-size: 1.5rem;"></i>
-                        </div>
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Active Group Theses</p>
+                        <h3 class="mb-0">{{ $activeGroupCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-warning text-warning rounded-3">
+                        <i class="feather-activity"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-xl-3">
+            <div class="ta-panel h-100">
+                <div class="ta-panel-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="text-muted mb-1 small">Upcoming Defenses</p>
+                        <h3 class="mb-0">{{ $upcomingDefenseCount }}</h3>
+                    </div>
+                    <div class="avatar-text avatar-lg bg-soft-info text-info rounded-3">
+                        <i class="feather-calendar"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Content Columns -->
     <div class="row g-4">
-        <!-- Main Content: Student List -->
-        <div class="col-lg-8">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between py-3">
-                    <h5 class="card-title fw-bold mb-0">My Students</h5>
-                    <a href="{{ route('supervisor.students.index') }}" class="btn btn-sm btn-light-brand text-primary">
-                        View All Students <i class="feather-arrow-right ms-1"></i>
-                    </a>
+        <div class="col-xl-8">
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Group Thesis Queue</h3>
+                    <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link">Open Full List</a>
                 </div>
-                <div class="card-body p-0">
-                    @php
-                        $theses = auth()->user()->supervisor ? auth()->user()->supervisor->theses()->with('student.user')->latest()->take(5)->get() : collect([]);
-                    @endphp
+                <div class="ta-table-shell">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Group</th>
+                                <th>Members</th>
+                                <th>Shared Thesis</th>
+                                <th>Latest Proposal</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($groups as $group)
+                                @php
+                                    $groupThesis = $groupTheses->get($group->id);
+                                    $latestProposal = $groupThesis?->proposals?->first();
+                                    $statusClass = $groupThesis
+                                        ? match($groupThesis->status) {
+                                            'completed' => 'bg-soft-success text-success',
+                                            'rejected' => 'bg-soft-danger text-danger',
+                                            default => 'bg-soft-warning text-warning',
+                                        }
+                                        : 'bg-soft-dark text-dark';
 
-                    @if($theses->isEmpty())
-                        <div class="text-center py-5">
-                            <i class="feather-users text-muted fs-1 opacity-25"></i>
-                            <p class="text-muted mt-2">No students assigned yet.</p>
-                        </div>
-                    @else
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr>
-                                        <th class="ps-4">Student</th>
-                                        <th>Thesis Title</th>
-                                        <th>Status</th>
-                                        <th class="text-end pe-4">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($theses as $thesis)
-                                    <tr>
-                                        <td class="ps-4">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="avatar-text avatar-sm bg-primary-subtle text-primary rounded-circle">
-                                                    {{ substr($thesis->student->user->name ?? 'U', 0, 1) }}
-                                                </div>
-                                                <div>
-                                                    <h6 class="mb-0 fw-bold fs-14">{{ $thesis->student->user->name ?? 'Unknown' }}</h6>
-                                                    <small class="text-muted">{{ $thesis->student->matriculation_number ?? 'N/A' }}</small>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="d-inline-block text-truncate" style="max-width: 200px;" title="{{ $thesis->title }}">
-                                                {{ $thesis->title }}
+                                    $memberNames = $group->students->pluck('user.name')->filter()->values();
+                                @endphp
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <span class="fw-semibold">{{ $group->name }}</span>
+                                            <span class="d-block small text-muted">{{ $group->department?->code ?? 'No Department' }}</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-semibold">{{ $group->students_count }}</span>
+                                        <span class="d-block small text-muted text-truncate" style="max-width: 180px;" title="{{ $memberNames->implode(', ') }}">
+                                            {{ $memberNames->take(2)->implode(', ') }}{{ $memberNames->count() > 2 ? ' +' . ($memberNames->count() - 2) . ' more' : '' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if($groupThesis)
+                                            <span class="d-inline-block text-truncate" style="max-width: 240px;">
+                                                {{ \Illuminate\Support\Str::limit($groupThesis->title, 60) }}
                                             </span>
-                                        </td>
-                                        <td>
-                                            <span class="badge {{ $thesis->status === 'completed' ? 'bg-soft-success text-success' : 
-                                               ($thesis->status === 'rejected' ? 'bg-soft-danger text-danger' : 'bg-soft-warning text-warning') }}">
-                                                {{ ucfirst(str_replace('_', ' ', $thesis->status)) }}
-                                            </span>
-                                        </td>
-                                        <td class="text-end pe-4">
-                                            <a href="{{ route('supervisor.theses.show', $thesis) }}" class="btn btn-sm btn-primary">
-                                                Manage
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+                                        @else
+                                            <span class="small text-muted">No thesis submitted yet</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="small text-muted">
+                                            {{ $latestProposal ? ucfirst(str_replace('_', ' ', $latestProposal->status)) : 'No proposal yet' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $statusClass }} text-uppercase">
+                                            {{ $groupThesis ? str_replace('_', ' ', $groupThesis->status) : 'awaiting proposal' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        @if($groupThesis)
+                                            <a href="{{ route('supervisor.theses.show', $groupThesis) }}" class="btn btn-sm btn-primary">Manage</a>
+                                        @else
+                                            <button class="btn btn-sm btn-light" disabled>Awaiting Proposal</button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">No groups are assigned yet.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Recent Activity / Notifications (Placeholder) -->
-        <div class="col-lg-4">
-            <div class="card stretch stretch-full border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="card-title fw-bold mb-0">Recent Activity</h5>
+        <div class="col-xl-4">
+            <div class="ta-panel mb-4">
+                <div class="ta-panel-head">
+                    <h3>Review Priorities</h3>
                 </div>
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column align-items-center justify-content-center h-100 text-center text-muted" style="min-height: 200px;">
-                        <i class="feather-bell-off fs-1 opacity-25 mb-3"></i>
-                        <p class="mb-0">No recent activity to show.</p>
+                <div class="ta-panel-body">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small text-muted">Pending Proposal Reviews</span>
+                        <strong>{{ $pendingReviewCount }}</strong>
                     </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small text-muted">Groups Waiting For Proposal</span>
+                        <strong>{{ $groupsWaitingForProposal }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="small text-muted">Upcoming Defenses</span>
+                        <strong>{{ $upcomingDefenseCount }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="small text-muted">Active Group Theses</span>
+                        <strong>{{ $activeGroupCount }}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ta-panel">
+                <div class="ta-panel-head">
+                    <h3>Quick Links</h3>
+                </div>
+                <div class="ta-panel-body d-grid gap-2">
+                    <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link justify-content-between">
+                        Manage Students <i class="feather-arrow-right"></i>
+                    </a>
+                    <a href="{{ route('defense.schedule') }}" class="ta-chip-link justify-content-between">
+                        Defense Schedule <i class="feather-arrow-right"></i>
+                    </a>
+                    <a href="{{ route('profile.edit') }}" class="ta-chip-link justify-content-between">
+                        Profile Settings <i class="feather-arrow-right"></i>
+                    </a>
                 </div>
             </div>
         </div>

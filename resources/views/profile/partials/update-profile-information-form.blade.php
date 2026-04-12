@@ -1,10 +1,5 @@
 <section>
-    <div class="mb-4">
-        <h5 class="fw-bold text-dark mb-1">{{ __('Profile Information') }}</h5>
-        <p class="text-muted small">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </div>
+    <p class="text-muted small mb-4">{{ __("Update your account's profile information and email address.") }}</p>
 
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf

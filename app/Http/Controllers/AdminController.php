@@ -19,8 +19,29 @@ class AdminController extends Controller
 {
     public function users()
     {
-        $users = User::with(['role', 'department'])->paginate(10);
-        return view('admin.users.index', compact('users'));
+        $perPage = (int) request('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 10;
+        }
+
+        $roleFilter = trim((string) request('role', ''));
+
+        $query = User::with(['role', 'department']);
+
+        if ($roleFilter !== '') {
+            $query->whereHas('role', function ($roleQuery) use ($roleFilter) {
+                $roleQuery->where('name', $roleFilter);
+            });
+        }
+
+        $users = $query
+            ->orderBy('name')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $roles = Role::orderBy('name')->get();
+
+        return view('admin.users.index', compact('users', 'roles', 'perPage', 'roleFilter'));
     }
 
     public function createUser()
@@ -55,7 +76,7 @@ class AdminController extends Controller
         if ($roleName === 'student') {
             Student::create([
                 'user_id' => $user->id,
-                'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                'student_id_number' => Student::generateStudentIdNumber($user->id),
                 'program' => 'General',
                 'supervisor_id' => $request->supervisor_id,
             ]);
@@ -105,7 +126,7 @@ class AdminController extends Controller
             if (!$user->student) {
                  Student::create([
                     'user_id' => $user->id,
-                    'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                    'student_id_number' => Student::generateStudentIdNumber($user->id),
                     'program' => 'General',
                     'supervisor_id' => $request->supervisor_id,
                 ]);
@@ -265,7 +286,7 @@ class AdminController extends Controller
 
                     Student::create([
                         'user_id' => $user->id,
-                        'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                        'student_id_number' => Student::generateStudentIdNumber($user->id),
                         'program' => $request->program ?? 'General',
                         'supervisor_id' => $request->supervisor_id,
                         'student_group_id' => $group->id,
@@ -285,7 +306,7 @@ class AdminController extends Controller
                     if (!$user->student) {
                         Student::create([
                             'user_id' => $user->id,
-                            'student_id_number' => 'STD' . date('Y') . mt_rand(1000, 9999),
+                            'student_id_number' => Student::generateStudentIdNumber($user->id),
                             'program' => $request->program ?? 'General',
                             'supervisor_id' => $request->supervisor_id,
                             'student_group_id' => $group->id,
