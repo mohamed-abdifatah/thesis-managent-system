@@ -62,19 +62,41 @@
                 min-height: 100vh;
                 font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
                 color: var(--ink);
-                background:
-                    radial-gradient(900px 460px at 8% -2%, var(--hero-glow-a), transparent 60%),
-                    radial-gradient(760px 420px at 92% 0%, var(--hero-glow-b), transparent 58%),
-                    linear-gradient(150deg, #fefaf3 0%, var(--paper) 100%);
                 line-height: 1.56;
                 transition: color 0.25s ease, background 0.25s ease;
+                position: relative;
+                overflow-x: hidden;
+                isolation: isolate;
+                background: transparent;
             }
 
-            html.app-skin-dark body {
+            .page-bg {
+                content: "";
+                position: fixed;
+                inset: -24px;
+                background: center center / cover no-repeat url("{{ asset('assets/images/background.png') }}");
+                filter: blur(8px) brightness(0.9);
+                transform: scale(1.04);
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .page-tint {
+                position: fixed;
+                inset: 0;
                 background:
                     radial-gradient(900px 460px at 8% -2%, var(--hero-glow-a), transparent 60%),
                     radial-gradient(760px 420px at 92% 0%, var(--hero-glow-b), transparent 58%),
-                    linear-gradient(150deg, #0c131c 0%, var(--paper) 100%);
+                    linear-gradient(150deg, rgba(254, 250, 243, 0.5) 0%, rgba(246, 240, 231, 0.58) 100%);
+                pointer-events: none;
+                z-index: 1;
+            }
+
+            html.app-skin-dark .page-tint {
+                background:
+                    radial-gradient(900px 460px at 8% -2%, var(--hero-glow-a), transparent 60%),
+                    radial-gradient(760px 420px at 92% 0%, var(--hero-glow-b), transparent 58%),
+                    linear-gradient(150deg, rgba(12, 19, 28, 0.6) 0%, rgba(13, 20, 29, 0.68) 100%);
             }
 
             .noise {
@@ -83,7 +105,7 @@
                 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.07'/></svg>");
                 pointer-events: none;
                 mix-blend-mode: multiply;
-                z-index: 0;
+                z-index: 2;
             }
 
             html.app-skin-dark body .noise {
@@ -93,7 +115,7 @@
 
             .page {
                 position: relative;
-                z-index: 1;
+                z-index: 3;
                 width: min(1220px, 100%);
                 margin: 0 auto;
                 padding: 22px 18px 72px;
@@ -130,13 +152,20 @@
                 width: 42px;
                 height: 42px;
                 border-radius: 14px;
-                display: grid;
-                place-items: center;
-                color: #ffffff;
-                font-family: "Fraunces", serif;
-                font-size: 1.08rem;
-                background: linear-gradient(145deg, var(--accent), #ffbc60);
-                box-shadow: 0 12px 24px rgba(217, 79, 32, 0.34);
+                overflow: hidden;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: #ffffff;
+                border: 1px solid var(--line);
+                box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+            }
+
+            .brand-mark img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
             }
 
             .brand-copy {
@@ -505,6 +534,8 @@
         </style>
     </head>
     <body>
+        <div class="page-bg" aria-hidden="true"></div>
+        <div class="page-tint" aria-hidden="true"></div>
         <div class="noise"></div>
 
         <div class="page">

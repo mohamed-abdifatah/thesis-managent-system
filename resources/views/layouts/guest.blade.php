@@ -161,13 +161,20 @@
                 width: 42px;
                 height: 42px;
                 border-radius: 14px;
-                display: grid;
-                place-items: center;
-                color: #ffffff;
-                font-family: "Fraunces", serif;
-                font-size: 1.08rem;
-                background: linear-gradient(145deg, var(--accent), #ffbc60);
-                box-shadow: 0 12px 24px rgba(217, 79, 32, 0.34);
+                overflow: hidden;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: #ffffff;
+                border: 1px solid var(--line);
+                box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+            }
+
+            .brand-mark img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
             }
 
             .brand-copy {

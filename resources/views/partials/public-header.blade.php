@@ -1,6 +1,8 @@
 <header class="site-header">
     <a href="{{ url('/') }}" class="brand">
-        <span class="brand-mark">T</span>
+        <span class="brand-mark">
+            <img src="{{ asset('assets/images/rsu.jpg') }}" alt="RSU logo">
+        </span>
         <span class="brand-copy">
             <strong>{{ config('app.name', 'Thesis Management System') }}</strong>
             <span>Academic Workspace</span>
