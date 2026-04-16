@@ -11,26 +11,27 @@ class DashboardController extends Controller
         $user = auth()->user();
 
         if (!$user->role) {
-            // Fallback if role is missing (should not happen with correct seeding/registration)
             return view('dashboard', ['error' => 'No role assigned']);
         }
 
-        if ($user->role->name === 'admin') {
+        $roleName = $user->role->name;
+
+        if ($roleName === 'admin') {
             return view('dashboard.admin');
-        } elseif ($user->role->name === 'student') {
+        } elseif ($roleName === 'student') {
             return view('dashboard.student');
-        } elseif ($user->role->name === 'supervisor') {
-             return view('dashboard.supervisor');
-        } elseif ($user->role->name === 'cosupervisor') {
-             return view('dashboard.supervisor'); // Create specialized if needed
-        } elseif ($user->role->name === 'coordinator') {
-             return view('dashboard.admin'); // Re-use admin dashboard or create new
-        } elseif ($user->role->name === 'examiner') {
-             return view('dashboard.examiner');
-        } elseif ($user->role->name === 'librarian') {
-             return view('dashboard.librarian');
+        } elseif ($roleName === 'supervisor') {
+            return view('dashboard.supervisor');
+        } elseif ($roleName === 'cosupervisor') {
+            return view('dashboard.supervisor');
+        } elseif ($roleName === 'coordinator') {
+            return view('dashboard.admin');
+        } elseif ($roleName === 'examiner') {
+            return view('dashboard.examiner');
+        } elseif ($roleName === 'librarian') {
+            return view('dashboard.librarian');
         }
 
-        return view('dashboard');
+        return view('dashboard', ['error' => 'No dedicated dashboard for role: ' . $roleName]);
     }
 }

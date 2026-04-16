@@ -7,6 +7,20 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <script>
+            (() => {
+                const storageKey = 'app-skin-dark';
+                try {
+                    const stored = localStorage.getItem(storageKey);
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    const isDark = stored ? stored === 'app-skin-dark' : prefersDark;
+                    document.documentElement.classList.toggle('app-skin-dark', isDark);
+                } catch (_) {
+                    // Ignore localStorage access failures
+                }
+            })();
+        </script>
+
         <!-- Favicon -->
         <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
@@ -28,6 +42,8 @@
                 --ta-primary-deep: #1d4ed8;
                 --ta-soft: #edf3ff;
                 --ta-shadow: 0 14px 30px rgba(15, 23, 42, 0.06);
+                --ta-sidebar-full: 280px;
+                --ta-sidebar-mini: 100px;
             }
 
             body {
@@ -37,6 +53,39 @@
                     radial-gradient(circle at 10% 96%, rgba(79, 70, 229, 0.1), transparent 35%),
                     var(--ta-bg);
                 color: var(--ta-ink);
+                line-height: 1.55;
+                text-rendering: optimizeLegibility;
+                -webkit-font-smoothing: antialiased;
+                overflow-x: hidden;
+            }
+
+            a {
+                color: #1d4ed8;
+                text-underline-offset: 2px;
+            }
+
+            a:hover {
+                color: #1a3ea7;
+            }
+
+            .ta-skip-link {
+                position: fixed;
+                left: 14px;
+                top: 10px;
+                transform: translateY(-150%);
+                z-index: 3000;
+                border-radius: 10px;
+                padding: 8px 12px;
+                background: #0f172a;
+                color: #ffffff;
+                font-size: 0.78rem;
+                font-weight: 700;
+                text-decoration: none;
+                transition: transform 0.2s ease;
+            }
+
+            .ta-skip-link:focus {
+                transform: translateY(0);
             }
 
             .nxl-header,
@@ -57,6 +106,38 @@
                 background: var(--ta-surface);
                 border-right: 1px solid var(--ta-border);
                 box-shadow: none;
+                width: var(--ta-sidebar-full);
+                overflow-x: hidden;
+            }
+
+            .nxl-navigation .navbar-wrapper {
+                height: 100vh;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .nxl-navigation .navbar-content {
+                flex: 1 1 auto;
+                min-height: 0;
+                max-height: calc(100vh - 84px);
+                height: calc(100vh - 84px) !important;
+                overflow-y: auto !important;
+                overflow-x: hidden;
+                overscroll-behavior: contain;
+                padding-bottom: 14px;
+            }
+
+            .nxl-navigation .navbar-content .nxl-navbar {
+                padding-bottom: 12px;
+            }
+
+            .nxl-navigation .nxl-hasmenu.force-open > .nxl-submenu {
+                display: block !important;
+            }
+
+            .nxl-navigation .nxl-hasmenu.force-open > .nxl-link > .nxl-arrow {
+                transform: rotate(90deg);
             }
 
             .nxl-navigation .m-header {
@@ -112,6 +193,91 @@
                 margin-top: 3px;
             }
 
+            html.minimenu .nxl-navigation {
+                width: var(--ta-sidebar-mini);
+            }
+
+            html.minimenu .nxl-navigation .navbar-content {
+                max-height: calc(100vh - 84px);
+                height: calc(100vh - 84px) !important;
+            }
+
+            html.minimenu .nxl-navigation .m-header {
+                justify-content: center;
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+
+            html.minimenu .nxl-navigation .ta-brand {
+                justify-content: center;
+            }
+
+            html.minimenu .nxl-navigation .ta-brand-text {
+                display: none;
+            }
+
+            html.minimenu .nxl-navigation .nxl-navbar .nxl-caption {
+                display: none;
+            }
+
+            html.minimenu .nxl-navigation .nxl-navbar .nxl-link {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+
+            html.minimenu .nxl-navigation .nxl-navbar .nxl-micon {
+                margin-right: 0;
+            }
+
+            html.minimenu .nxl-navigation .nxl-navbar .nxl-mtext,
+            html.minimenu .nxl-navigation .nxl-navbar .nxl-arrow {
+                display: none;
+            }
+
+            html.minimenu .nxl-navigation .nxl-submenu {
+                display: none !important;
+            }
+
+            html.minimenu .nxl-navigation .nxl-hasmenu.force-open > .nxl-submenu,
+            html.minimenu .nxl-navigation .nxl-hasmenu.nxl-trigger > .nxl-submenu {
+                display: none !important;
+            }
+
+            html.minimenu .nxl-navigation .nxl-hasmenu.force-open > .nxl-link > .nxl-arrow,
+            html.minimenu .nxl-navigation .nxl-hasmenu.nxl-trigger > .nxl-link > .nxl-arrow {
+                transform: none !important;
+            }
+
+            /* Keep mini sidebar compact even on hover to avoid content overlap. */
+            html.minimenu .nxl-navigation:hover {
+                width: var(--ta-sidebar-mini) !important;
+            }
+
+            html.minimenu .nxl-navigation:hover .navbar-content {
+                position: relative !important;
+                width: var(--ta-sidebar-mini) !important;
+                background: var(--ta-surface) !important;
+                border-right: 1px solid var(--ta-border) !important;
+            }
+
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-link {
+                margin: 0 20px !important;
+                margin-bottom: 3px !important;
+                padding: 12px 20px !important;
+            }
+
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-caption,
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-mtext,
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-arrow,
+            html.minimenu .nxl-navigation:hover .navbar-content .card,
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-submenu,
+            html.minimenu .nxl-navigation:hover .navbar-content .nxl-hasmenu.nxl-trigger > .nxl-submenu {
+                display: none !important;
+            }
+
             .nxl-navbar .nxl-caption label {
                 font-size: 0.68rem;
                 font-weight: 700;
@@ -155,6 +321,19 @@
                 border-bottom: 1px solid var(--ta-border);
                 min-height: 72px;
                 overflow: visible;
+                left: var(--ta-sidebar-full);
+            }
+
+            .nxl-container {
+                margin-left: var(--ta-sidebar-full);
+            }
+
+            html.minimenu .nxl-header {
+                left: var(--ta-sidebar-mini);
+            }
+
+            html.minimenu .nxl-container {
+                margin-left: var(--ta-sidebar-mini);
             }
 
             .header-wrapper {
@@ -342,6 +521,17 @@
 
             .main-content {
                 padding-top: 22px;
+                padding-left: clamp(10px, 1.8vw, 24px);
+                padding-right: clamp(10px, 1.8vw, 24px);
+                padding-bottom: 18px;
+                max-width: 1720px;
+                margin: 0 auto;
+                width: 100%;
+                overflow-x: clip;
+            }
+
+            .main-content > :first-child {
+                margin-top: 0;
             }
 
             .page-header {
@@ -355,6 +545,121 @@
             .bg-white {
                 border-color: var(--ta-border) !important;
                 box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+                border-radius: 16px;
+            }
+
+            .form-label {
+                margin-bottom: 6px;
+                font-size: 0.73rem;
+                font-weight: 700;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                color: #607086;
+            }
+
+            .form-control,
+            .form-select {
+                min-height: 44px;
+                border-radius: 12px;
+                border-color: #c9d8ea;
+                color: #16273f;
+                font-weight: 600;
+                box-shadow: none;
+            }
+
+            textarea.form-control {
+                min-height: 94px;
+                line-height: 1.5;
+            }
+
+            .form-control::placeholder,
+            .form-select::placeholder {
+                color: #8a9ab0;
+                font-weight: 500;
+            }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #4e7cff;
+                box-shadow: 0 0 0 4px rgba(78, 124, 255, 0.14);
+            }
+
+            .btn {
+                border-radius: 12px;
+                font-weight: 700;
+                min-height: 40px;
+                padding: 0.5rem 0.95rem;
+            }
+
+            .btn-sm {
+                min-height: 33px;
+                border-radius: 10px;
+                padding: 0.35rem 0.7rem;
+            }
+
+            .badge {
+                font-weight: 700;
+                letter-spacing: 0.02em;
+            }
+
+            .table thead th,
+            .table thead td,
+            .ta-table-shell thead th {
+                position: sticky;
+                top: 0;
+                z-index: 2;
+            }
+
+            .table tbody tr:hover td {
+                background: #f7fbff;
+            }
+
+            .alert {
+                border-radius: 14px;
+                border-width: 1px;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+            }
+
+            .ta-error-summary {
+                border: 1px solid #f7c4c4;
+                background: #fff2f2;
+                color: #7e2020;
+            }
+
+            .ta-error-summary ul {
+                margin: 8px 0 0;
+                padding-left: 18px;
+            }
+
+            #ta-back-to-top {
+                position: fixed;
+                right: 18px;
+                bottom: 18px;
+                z-index: 2000;
+                width: 42px;
+                height: 42px;
+                border: 1px solid #c7d7ea;
+                border-radius: 999px;
+                background: #ffffff;
+                color: #1d4ed8;
+                box-shadow: 0 10px 24px rgba(15, 23, 42, 0.14);
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transform: translateY(10px);
+                pointer-events: none;
+                transition: opacity 0.2s ease, transform 0.2s ease;
+            }
+
+            #ta-back-to-top.is-visible {
+                opacity: 1;
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            #ta-back-to-top:hover {
+                background: #f2f7ff;
             }
 
             .ta-page-head {
@@ -612,6 +917,14 @@
                 color: #a7b3c3;
             }
 
+            html.app-skin-dark a {
+                color: #93b4ff;
+            }
+
+            html.app-skin-dark a:hover {
+                color: #c3d6ff;
+            }
+
             html.app-skin-dark .ta-chip-link,
             html.app-skin-dark .ta-panel,
             html.app-skin-dark .ta-table-shell thead th {
@@ -636,6 +949,28 @@
                 border-color: rgba(255, 255, 255, 0.12);
             }
 
+            html.app-skin-dark .form-control::placeholder,
+            html.app-skin-dark .form-select::placeholder,
+            html.app-skin-dark .form-label {
+                color: #97a8bc;
+            }
+
+            html.app-skin-dark .table tbody tr:hover td {
+                background: #1a2231;
+            }
+
+            html.app-skin-dark .ta-error-summary {
+                background: #2b1d1d;
+                border-color: #6a2f2f;
+                color: #ffc9c9;
+            }
+
+            html.app-skin-dark #ta-back-to-top {
+                background: #1b212b;
+                color: #9fb9ff;
+                border-color: rgba(255, 255, 255, 0.18);
+            }
+
             html.app-skin-dark .table > :not(caption) > * > * {
                 background-color: transparent;
                 color: inherit;
@@ -643,12 +978,22 @@
             }
 
             @media (max-width: 991px) {
+                .nxl-header {
+                    left: 0 !important;
+                }
+
+                .nxl-container {
+                    margin-left: 0 !important;
+                }
+
                 .header-wrapper {
                     padding: 0 14px;
                 }
 
                 .main-content {
                     padding-top: 14px;
+                    padding-left: 10px;
+                    padding-right: 10px;
                 }
 
                 .nxl-header .header-wrapper .header-right .nxl-h-item .nxl-h-dropdown.nxl-user-dropdown {
@@ -663,6 +1008,8 @@
         <!-- We are using the template scripts instead of Vite for now as requested -->
     </head>
     <body class="bg-gray-100">
+        <a href="#app-main-content" class="ta-skip-link">Skip to content</a>
+
         <!-- Navigation Menu -->
         @include('layouts.sidebar')
 
@@ -673,7 +1020,18 @@
         <main class="nxl-container">
             <div class="nxl-content">
                 <!-- Page Content -->
-                <div class="main-content">
+                <div class="main-content" id="app-main-content">
+                    @if ($errors->any())
+                        <div class="alert ta-error-summary mb-3" role="alert">
+                            <strong class="d-block">Please review the highlighted fields:</strong>
+                            <ul>
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
                     {{ $slot }}
                 </div>
             </div>
@@ -693,6 +1051,10 @@
 
         <!-- Vendors JS -->
         <script src="{{ asset('assets/vendors/js/vendors.min.js') }}"></script>
+
+        <button type="button" id="ta-back-to-top" aria-label="Back to top">
+            <i class="feather-chevron-up"></i>
+        </button>
 
         <!-- Bootstrap JS (modal, dropdown, etc.) -->
         <script src="{{ asset('assets/js/bootstrap.min.js') }}"></script>
@@ -734,6 +1096,22 @@
                         applyTheme(false);
                     });
                 }
+            })();
+
+            (() => {
+                const backButton = document.getElementById('ta-back-to-top');
+                if (!backButton) return;
+
+                const handleScroll = () => {
+                    backButton.classList.toggle('is-visible', window.scrollY > 420);
+                };
+
+                window.addEventListener('scroll', handleScroll, { passive: true });
+                handleScroll();
+
+                backButton.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
             })();
         </script>
         

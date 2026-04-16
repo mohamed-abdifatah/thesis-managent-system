@@ -63,6 +63,8 @@ class DefenseSessionController extends Controller
                     'role' => $member['role'],
                 ]);
             }
+
+            $this->syncThesisStatusFromDefense($session);
         });
 
         return redirect()->route('admin.defenses.index')->with('success', 'Defense session created.');
@@ -115,8 +117,45 @@ class DefenseSessionController extends Controller
                     'role' => $member['role'],
                 ]);
             }
+
+            $this->syncThesisStatusFromDefense($defense);
         });
 
         return redirect()->route('admin.defenses.index')->with('success', 'Defense session updated.');
+    }
+
+    private function syncThesisStatusFromDefense(DefenseSession $defense): void
+    {
+        $thesis = Thesis::find($defense->thesis_id);
+
+        if (!$thesis) {
+            return;
+        }
+
+        if ($defense->status === 'completed') {
+            $thesis->update([
+                'status' => 'defended',
+                'is_library_approved' => false,
+                'library_approved_by' => null,
+                'library_approved_at' => null,
+                'is_public' => false,
+                'published_by' => null,
+                'published_at' => null,
+            ]);
+
+            return;
+        }
+
+        if (in_array($thesis->status, ['defended', 'completed'], true)) {
+            $thesis->update([
+                'status' => 'ready_for_defense',
+                'is_library_approved' => false,
+                'library_approved_by' => null,
+                'library_approved_at' => null,
+                'is_public' => false,
+                'published_by' => null,
+                'published_at' => null,
+            ]);
+        }
     }
 }

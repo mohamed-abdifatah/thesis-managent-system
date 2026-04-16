@@ -1,23 +1,34 @@
 <x-app-layout>
     @php
-        $completedThesisQuery = \App\Models\Thesis::query()->where('status', 'completed');
+        $catalogThesisQuery = \App\Models\Thesis::query()
+            ->whereIn('status', ['defended', 'completed']);
 
-        $catalogReadyCount = (clone $completedThesisQuery)
+        $catalogReadyCount = (clone $catalogThesisQuery)
+            ->where('status', 'defended')
+            ->where('is_library_approved', false)
             ->whereHas('defense', fn ($query) => $query->where('status', 'completed'))
+            ->whereHas('approvedVersions')
             ->count();
 
-        $pendingValidationCount = (clone $completedThesisQuery)
+        $pendingValidationCount = (clone $catalogThesisQuery)
+            ->where('status', 'defended')
             ->where(function ($query) {
                 $query->doesntHave('defense')
-                    ->orWhereHas('defense', fn ($defenseQuery) => $defenseQuery->where('status', '!=', 'completed'));
+                    ->orWhereHas('defense', fn ($defenseQuery) => $defenseQuery->where('status', '!=', 'completed'))
+                    ->orDoesntHave('approvedVersions');
             })
             ->count();
 
-        $digitalCopyCount = \App\Models\ThesisVersion::count();
-        $totalCatalogCount = (clone $completedThesisQuery)->count();
+        $publishedCount = (clone $catalogThesisQuery)
+            ->where('is_public', true)
+            ->count();
+
+        $totalCatalogCount = (clone $catalogThesisQuery)
+            ->where('is_library_approved', true)
+            ->count();
 
         $catalogQueue = \App\Models\Thesis::with(['student.user', 'supervisor.user', 'defense'])
-            ->where('status', 'completed')
+            ->whereIn('status', ['defended', 'completed'])
             ->latest()
             ->take(8)
             ->get();
@@ -33,6 +44,10 @@
             <a href="{{ route('profile.edit') }}" class="ta-chip-link">
                 <i class="feather-user"></i>
                 Profile
+            </a>
+            <a href="{{ route('library.catalog.index') }}" class="ta-chip-link">
+                <i class="feather-book"></i>
+                Manage Catalog
             </a>
         </div>
     </div>
@@ -70,11 +85,11 @@
             <div class="ta-panel h-100">
                 <div class="ta-panel-body d-flex align-items-center justify-content-between">
                     <div>
-                        <p class="text-muted mb-1 small">Digital Copies</p>
-                        <h3 class="mb-0">{{ $digitalCopyCount }}</h3>
+                        <p class="text-muted mb-1 small">Published Books</p>
+                        <h3 class="mb-0">{{ $publishedCount }}</h3>
                     </div>
                     <div class="avatar-text avatar-lg bg-soft-primary text-primary rounded-3">
-                        <i class="feather-file-text"></i>
+                        <i class="feather-globe"></i>
                     </div>
                 </div>
             </div>
@@ -117,6 +132,8 @@
                             @forelse($catalogQueue as $thesis)
                                 @php
                                     $isDefenseComplete = $thesis->defense && $thesis->defense->status === 'completed';
+                                    $isValidated = (bool) $thesis->is_library_approved;
+                                    $isPublished = (bool) $thesis->is_public;
                                 @endphp
                                 <tr>
                                     <td>
@@ -132,10 +149,14 @@
                                         </span>
                                     </td>
                                     <td>
-                                        @if($isDefenseComplete)
-                                            <span class="badge bg-soft-success text-success">Ready</span>
+                                        @if($isPublished)
+                                            <span class="badge bg-soft-primary text-primary">Public</span>
+                                        @elseif($isValidated)
+                                            <span class="badge bg-soft-info text-info">Validated</span>
+                                        @elseif($isDefenseComplete)
+                                            <span class="badge bg-soft-success text-success">Ready to Validate</span>
                                         @else
-                                            <span class="badge bg-soft-warning text-warning">Needs Validation</span>
+                                            <span class="badge bg-soft-warning text-warning">Needs Review</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -178,6 +199,12 @@
                     <h3>Quick Links</h3>
                 </div>
                 <div class="ta-panel-body d-grid gap-2">
+                    <a href="{{ route('library.catalog.index') }}" class="ta-chip-link justify-content-between">
+                        Catalog Review <i class="feather-arrow-right"></i>
+                    </a>
+                    <a href="{{ route('books.index') }}" class="ta-chip-link justify-content-between" target="_blank" rel="noopener noreferrer">
+                        Public Books Portal <i class="feather-arrow-right"></i>
+                    </a>
                     <a href="{{ route('dashboard') }}" class="ta-chip-link justify-content-between">
                         Dashboard Home <i class="feather-arrow-right"></i>
                     </a>

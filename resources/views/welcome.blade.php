@@ -5,42 +5,51 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ config('app.name', 'Thesis Management System') }}</title>
 
+        <script>
+            (() => {
+                const storageKey = 'app-skin-dark';
+                try {
+                    const stored = localStorage.getItem(storageKey);
+                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    const isDark = stored ? stored === 'app-skin-dark' : prefersDark;
+                    document.documentElement.classList.toggle('app-skin-dark', isDark);
+                } catch (_) {
+                    // Ignore localStorage access failures
+                }
+            })();
+        </script>
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700&display=swap" rel="stylesheet">
         <link href="https://fonts.bunny.net/css?family=fraunces:500,600,700&display=swap" rel="stylesheet">
 
         <style>
             :root {
-                --ink: #151515;
-                --muted: #5f6672;
-                --paper: #f6f2ed;
-                --cream: #fbf7f2;
-                --accent: #e4572e;
-                --accent-dark: #c7421d;
-                --sea: #2f8f9d;
-                --dusk: #2b2d42;
+                --ink: #1b2230;
+                --muted: #63758c;
+                --paper: #f6f0e7;
                 --card: #ffffff;
-                --shadow: 0 18px 45px rgba(18, 20, 23, 0.12);
-                --radius-xl: 28px;
-                --bg-1: #fff3e6;
-                --bg-2: #d7f3f6;
-                --bg-3: #f5efe8;
+                --line: rgba(27, 34, 48, 0.14);
+                --accent: #d94f20;
+                --accent-strong: #b63b14;
+                --teal: #0f8a96;
+                --header-glass: rgba(255, 255, 255, 0.78);
+                --hero-glow-a: rgba(217, 79, 32, 0.19);
+                --hero-glow-b: rgba(15, 138, 150, 0.16);
             }
 
-            body.theme-dark {
-                --ink: #f1f1f1;
-                --muted: #a4adbb;
-                --paper: #101419;
-                --cream: #1a2027;
-                --accent: #ff8a5b;
-                --accent-dark: #ff6a32;
-                --sea: #6ad0dd;
-                --dusk: #e2e7f3;
-                --card: #151a21;
-                --shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
-                --bg-1: #1d232d;
-                --bg-2: #122033;
-                --bg-3: #0c1117;
+            html.app-skin-dark body {
+                --ink: #e8eef8;
+                --muted: #9eb0c8;
+                --paper: #0d141d;
+                --card: #151e2b;
+                --line: rgba(224, 235, 250, 0.14);
+                --accent: #ff8d5f;
+                --accent-strong: #ff6e3b;
+                --teal: #72d9e3;
+                --header-glass: rgba(16, 24, 37, 0.72);
+                --hero-glow-a: rgba(255, 141, 95, 0.2);
+                --hero-glow-b: rgba(114, 217, 227, 0.16);
             }
 
             * {
@@ -50,414 +59,600 @@
             }
 
             body {
+                min-height: 100vh;
                 font-family: "Space Grotesk", "Helvetica Neue", Helvetica, Arial, sans-serif;
                 color: var(--ink);
-                background: radial-gradient(circle at 20% 10%, var(--bg-1) 0%, transparent 55%),
-                    radial-gradient(circle at 80% 20%, var(--bg-2) 0%, transparent 40%),
-                    linear-gradient(120deg, #fdf9f4 0%, var(--bg-3) 100%);
-                min-height: 100vh;
-                transition: background 0.3s ease, color 0.3s ease;
+                background:
+                    radial-gradient(900px 460px at 8% -2%, var(--hero-glow-a), transparent 60%),
+                    radial-gradient(760px 420px at 92% 0%, var(--hero-glow-b), transparent 58%),
+                    linear-gradient(150deg, #fefaf3 0%, var(--paper) 100%);
+                line-height: 1.56;
+                transition: color 0.25s ease, background 0.25s ease;
             }
 
-            body.theme-dark {
-                background: radial-gradient(circle at 18% 8%, #243043 0%, transparent 55%),
-                    radial-gradient(circle at 82% 15%, #1a2f3a 0%, transparent 40%),
-                    linear-gradient(120deg, #0f141b 0%, #0a0f14 100%);
+            html.app-skin-dark body {
+                background:
+                    radial-gradient(900px 460px at 8% -2%, var(--hero-glow-a), transparent 60%),
+                    radial-gradient(760px 420px at 92% 0%, var(--hero-glow-b), transparent 58%),
+                    linear-gradient(150deg, #0c131c 0%, var(--paper) 100%);
             }
 
             .noise {
                 position: fixed;
                 inset: 0;
-                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(%23n)' opacity='0.08'/></svg>");
+                background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.07'/></svg>");
                 pointer-events: none;
                 mix-blend-mode: multiply;
+                z-index: 0;
             }
 
-            body.theme-dark .noise {
+            html.app-skin-dark body .noise {
                 mix-blend-mode: screen;
-                opacity: 0.4;
+                opacity: 0.34;
             }
 
             .page {
-                max-width: 1200px;
+                position: relative;
+                z-index: 1;
+                width: min(1220px, 100%);
                 margin: 0 auto;
-                padding: 28px 20px 80px;
+                padding: 22px 18px 72px;
             }
 
-            header {
+            .site-header {
+                position: sticky;
+                top: 14px;
+                z-index: 30;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 16px;
-            }
-
-            .logo {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                font-weight: 700;
-                letter-spacing: 0.02em;
-            }
-
-            .logo-mark {
-                width: 44px;
-                height: 44px;
-                border-radius: 14px;
-                background: linear-gradient(135deg, var(--accent), #ffba5a);
-                display: grid;
-                place-items: center;
-                color: white;
-                font-family: "Fraunces", serif;
-                font-size: 20px;
-                box-shadow: 0 10px 30px rgba(228, 87, 46, 0.35);
-            }
-
-            nav {
-                display: flex;
-                align-items: center;
                 gap: 14px;
-                flex-wrap: wrap;
+                border: 1px solid var(--line);
+                background: var(--header-glass);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 18px;
+                padding: 10px 12px;
+                margin-bottom: 24px;
             }
 
-            .btn {
+            .brand {
                 display: inline-flex;
                 align-items: center;
-                justify-content: center;
-                padding: 10px 18px;
-                border-radius: 999px;
-                border: 1px solid transparent;
+                gap: 10px;
                 text-decoration: none;
-                font-weight: 600;
-                transition: all 0.2s ease;
-                background: transparent;
-                cursor: pointer;
-            }
-
-            .btn-ghost {
-                border-color: rgba(21, 21, 21, 0.2);
                 color: var(--ink);
-                background: rgba(255, 255, 255, 0.7);
+                font-weight: 700;
+                min-width: 0;
             }
 
-            body.theme-dark .btn-ghost {
-                background: rgba(18, 22, 28, 0.7);
-                border-color: rgba(255, 255, 255, 0.18);
+            .brand-mark {
+                width: 42px;
+                height: 42px;
+                border-radius: 14px;
+                display: grid;
+                place-items: center;
+                color: #ffffff;
+                font-family: "Fraunces", serif;
+                font-size: 1.08rem;
+                background: linear-gradient(145deg, var(--accent), #ffbc60);
+                box-shadow: 0 12px 24px rgba(217, 79, 32, 0.34);
             }
 
-            .btn-ghost:hover {
-                border-color: rgba(21, 21, 21, 0.45);
+            .brand-copy {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.12;
+            }
+
+            .brand-copy strong {
+                font-size: 0.95rem;
+                letter-spacing: -0.02em;
+            }
+
+            .brand-copy span {
+                font-size: 0.69rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                margin-top: 3px;
+            }
+
+            .site-nav {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .nav-btn {
+                border: 1px solid transparent;
+                border-radius: 999px;
+                min-height: 40px;
+                padding: 9px 16px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                text-decoration: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .nav-btn.ghost {
+                color: var(--ink);
+                background: rgba(255, 255, 255, 0.6);
+                border-color: var(--line);
+            }
+
+            html.app-skin-dark body .nav-btn.ghost {
+                background: rgba(17, 27, 40, 0.72);
+            }
+
+            .nav-btn.ghost:hover {
                 transform: translateY(-1px);
+                border-color: rgba(159, 178, 206, 0.5);
             }
 
-            body.theme-dark .btn-ghost:hover {
-                border-color: rgba(255, 255, 255, 0.45);
+            .nav-btn.primary {
+                color: #ffffff;
+                background: linear-gradient(145deg, var(--accent), var(--accent-strong));
+                box-shadow: 0 14px 26px rgba(217, 79, 32, 0.3);
             }
 
-            .btn-primary {
-                background: var(--accent);
-                color: #fff;
-                box-shadow: 0 14px 30px rgba(228, 87, 46, 0.35);
-            }
-
-            .btn-primary:hover {
-                background: var(--accent-dark);
+            .nav-btn.primary:hover {
                 transform: translateY(-1px);
+                box-shadow: 0 18px 30px rgba(217, 79, 32, 0.35);
             }
 
             .hero {
-                margin-top: 48px;
                 display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-                gap: 28px;
-                align-items: center;
-            }
-
-            .hero h1 {
-                font-family: "Fraunces", serif;
-                font-size: clamp(32px, 5vw, 56px);
-                line-height: 1.05;
+                grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+                gap: 18px;
                 margin-bottom: 18px;
             }
 
-            .hero p {
-                color: var(--muted);
-                font-size: 18px;
-                line-height: 1.6;
-                margin-bottom: 28px;
-            }
-
-            .hero-actions {
-                display: flex;
-                gap: 14px;
-                flex-wrap: wrap;
-            }
-
-            .panel {
+            .hero-main,
+            .hero-side {
+                border: 1px solid var(--line);
+                border-radius: 26px;
                 background: var(--card);
-                border-radius: var(--radius-xl);
-                padding: 28px;
-                box-shadow: var(--shadow);
+                box-shadow: 0 20px 42px rgba(20, 31, 49, 0.1);
+            }
+
+            .hero-main {
                 position: relative;
                 overflow: hidden;
-                animation: float 7s ease-in-out infinite;
+                padding: clamp(20px, 3.2vw, 34px);
             }
 
-            .panel:before {
+            .hero-main::before {
                 content: "";
                 position: absolute;
-                inset: -60% 20% auto auto;
-                width: 220px;
-                height: 220px;
-                background: radial-gradient(circle, rgba(47, 143, 157, 0.18), transparent 70%);
-            }
-
-            .muted {
-                color: var(--muted);
-            }
-
-            .stat-grid {
-                display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 16px;
-                margin-top: 18px;
-            }
-
-            .stat {
-                background: var(--cream);
-                border-radius: 18px;
-                padding: 16px;
-                border: 1px solid rgba(21, 21, 21, 0.08);
-            }
-
-            body.theme-dark .stat {
-                border-color: rgba(255, 255, 255, 0.1);
-            }
-
-            .stat h3 {
-                font-size: 20px;
-                margin-bottom: 6px;
-            }
-
-            .stat span {
-                color: var(--muted);
-                font-size: 14px;
-            }
-
-            .section {
-                margin-top: 56px;
-            }
-
-            .section-title {
-                font-size: 24px;
-                margin-bottom: 18px;
-            }
-
-            .cards {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-                gap: 18px;
-            }
-
-            .card {
-                background: rgba(255, 255, 255, 0.85);
-                border-radius: 22px;
-                padding: 20px;
-                border: 1px solid rgba(21, 21, 21, 0.08);
-                transition: transform 0.25s ease, box-shadow 0.25s ease;
-            }
-
-            body.theme-dark .card {
-                background: rgba(14, 18, 24, 0.9);
-                border-color: rgba(255, 255, 255, 0.08);
-            }
-
-            .card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 16px 30px rgba(30, 35, 40, 0.12);
-            }
-
-            .tag {
-                display: inline-flex;
-                padding: 4px 10px;
+                width: 280px;
+                height: 280px;
                 border-radius: 999px;
-                font-size: 12px;
-                font-weight: 600;
-                background: rgba(47, 143, 157, 0.15);
-                color: var(--sea);
+                right: -130px;
+                top: -130px;
+                background: radial-gradient(circle, rgba(15, 138, 150, 0.2) 0%, transparent 72%);
+                pointer-events: none;
+            }
+
+            .hero-kicker {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--teal);
+                font-size: 0.74rem;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                font-weight: 800;
                 margin-bottom: 10px;
             }
 
-            body.theme-dark .tag {
-                background: rgba(106, 208, 221, 0.16);
+            .hero-kicker::before {
+                content: "";
+                width: 22px;
+                height: 2px;
+                border-radius: 999px;
+                background: var(--teal);
+            }
+
+            .hero-title {
+                margin: 0;
+                font-family: "Fraunces", serif;
+                letter-spacing: -0.03em;
+                line-height: 1.08;
+                font-size: clamp(2rem, 4.5vw, 3.5rem);
+                max-width: 720px;
+            }
+
+            .hero-text {
+                margin-top: 12px;
+                max-width: 660px;
+                color: var(--muted);
+                font-size: 0.96rem;
+                line-height: 1.78;
+            }
+
+            .hero-actions {
+                margin-top: 18px;
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+
+            .hero-link {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                color: var(--ink);
+                text-decoration: none;
+                font-weight: 700;
+                font-size: 0.86rem;
+            }
+
+            .hero-link:hover {
+                color: var(--teal);
+            }
+
+            .hero-side {
+                padding: 22px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                gap: 14px;
+            }
+
+            .hero-side h2 {
+                margin: 0;
+                font-size: 1.1rem;
+                letter-spacing: -0.02em;
+            }
+
+            .hero-side p {
+                margin: 6px 0 0;
+                color: var(--muted);
+                font-size: 0.88rem;
+            }
+
+            .snapshot-grid {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .snapshot {
+                border: 1px solid var(--line);
+                border-radius: 14px;
+                padding: 12px;
+                background: linear-gradient(160deg, rgba(255, 255, 255, 0.82) 0%, rgba(247, 251, 255, 0.92) 100%);
+            }
+
+            html.app-skin-dark body .snapshot {
+                background: linear-gradient(160deg, rgba(26, 37, 53, 0.86) 0%, rgba(19, 30, 44, 0.95) 100%);
+            }
+
+            .snapshot strong {
+                display: block;
+                font-size: 1.24rem;
+                line-height: 1.15;
+                letter-spacing: -0.03em;
+            }
+
+            .snapshot span {
+                display: block;
+                margin-top: 5px;
+                color: var(--muted);
+                font-size: 0.76rem;
+            }
+
+            .section {
+                border: 1px solid var(--line);
+                border-radius: 24px;
+                background: var(--card);
+                box-shadow: 0 16px 34px rgba(20, 31, 49, 0.07);
+                padding: 22px;
+                margin-top: 16px;
+            }
+
+            .section h3 {
+                margin: 0;
+                font-size: 1.3rem;
+                letter-spacing: -0.02em;
+            }
+
+            .section p.lead {
+                margin-top: 8px;
+                color: var(--muted);
+                font-size: 0.9rem;
+            }
+
+            .grid {
+                margin-top: 16px;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+
+            .feature {
+                border: 1px solid var(--line);
+                border-radius: 16px;
+                padding: 14px;
+                background: linear-gradient(170deg, rgba(255, 255, 255, 0.94) 0%, rgba(248, 250, 255, 0.9) 100%);
+                transition: transform 0.18s ease, box-shadow 0.18s ease;
+            }
+
+            html.app-skin-dark body .feature {
+                background: linear-gradient(170deg, rgba(24, 35, 50, 0.92) 0%, rgba(19, 29, 42, 0.94) 100%);
+            }
+
+            .feature:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 20px rgba(15, 23, 42, 0.1);
+            }
+
+            .feature-tag {
+                display: inline-flex;
+                border-radius: 999px;
+                padding: 4px 10px;
+                font-size: 0.68rem;
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+                font-weight: 800;
+                background: rgba(15, 138, 150, 0.16);
+                color: var(--teal);
+                margin-bottom: 8px;
+            }
+
+            .feature h4 {
+                margin: 0;
+                font-size: 1rem;
+                letter-spacing: -0.01em;
+            }
+
+            .feature p {
+                margin: 6px 0 0;
+                color: var(--muted);
+                font-size: 0.85rem;
+                line-height: 1.62;
+            }
+
+            .cta {
+                margin-top: 16px;
+                border-radius: 24px;
+                border: 1px solid var(--line);
+                background: linear-gradient(135deg, rgba(217, 79, 32, 0.12) 0%, rgba(15, 138, 150, 0.12) 100%);
+                padding: 18px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+
+            .cta h4 {
+                margin: 0;
+                font-size: 1.08rem;
+                letter-spacing: -0.02em;
+            }
+
+            .cta p {
+                margin: 4px 0 0;
+                color: var(--muted);
+                font-size: 0.85rem;
             }
 
             .footer {
-                margin-top: 64px;
-                text-align: center;
+                margin-top: 24px;
                 color: var(--muted);
-                font-size: 14px;
+                font-size: 0.8rem;
+                text-align: center;
             }
 
-            @keyframes float {
-                0%, 100% { transform: translateY(0px); }
-                50% { transform: translateY(-8px); }
+            @media (max-width: 1024px) {
+                .hero {
+                    grid-template-columns: 1fr;
+                }
+
+                .grid {
+                    grid-template-columns: 1fr 1fr;
+                }
             }
 
             @media (max-width: 720px) {
-                .panel {
-                    animation: none;
+                .page {
+                    padding: 14px 12px 50px;
                 }
-                header {
-                    flex-direction: column;
+
+                .site-header {
+                    top: 10px;
+                    border-radius: 14px;
+                }
+
+                .brand-copy strong {
+                    font-size: 0.88rem;
+                }
+
+                .site-nav {
+                    width: 100%;
+                }
+
+                .nav-btn {
+                    flex: 1 1 auto;
+                    text-align: center;
+                }
+
+                .hero-main,
+                .hero-side,
+                .section,
+                .cta {
+                    border-radius: 18px;
+                }
+
+                .grid,
+                .snapshot-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .cta {
                     align-items: flex-start;
+                }
+
+                .cta .nav-btn {
+                    width: 100%;
                 }
             }
         </style>
     </head>
     <body>
         <div class="noise"></div>
+
         <div class="page">
-            <header>
-                <div class="logo">
-                    <div class="logo-mark">T</div>
-                    <span>{{ config('app.name', 'Thesis Management System') }}</span>
-                </div>
-                <nav>
-                    <button class="btn btn-ghost" id="themeToggle" type="button" aria-pressed="false">
-                        Dark theme
-                    </button>
-                    @if (Route::has('login'))
-                        @auth
-                            <a class="btn btn-primary" href="{{ url('/dashboard') }}">Go to dashboard</a>
-                        @else
-                            <a class="btn btn-ghost" href="{{ route('login') }}">Log in</a>
-                            @if (Route::has('register'))
-                                <a class="btn btn-primary" href="{{ route('register') }}">Create account</a>
-                            @endif
-                        @endauth
-                    @endif
-                </nav>
-            </header>
+            @include('partials.public-header')
 
             <section class="hero">
-                <div>
-                    <h1>Run every thesis journey with clarity, not chaos.</h1>
-                    <p>From proposal to defense, this system keeps students, supervisors, and examiners on the same track. Organize submissions, schedule defenses, and keep every version secure.</p>
+                <article class="hero-main">
+                    <span class="hero-kicker">Research Operations, Simplified</span>
+                    <h1 class="hero-title">Build, review, and defend every thesis with one connected workflow.</h1>
+                    <p class="hero-text">From first proposal to final defense and public catalog release, this platform keeps students, supervisors, librarians, and examiners moving in sync. No missing files, no guesswork, no scattered communication.</p>
                     <div class="hero-actions">
                         @if (Route::has('login'))
                             @auth
-                                <a class="btn btn-primary" href="{{ url('/dashboard') }}">Open my workspace</a>
-                                <a class="btn btn-ghost" href="{{ route('defense.schedule') }}">View defense schedule</a>
+                                <a class="nav-btn primary" href="{{ url('/dashboard') }}">Open my workspace</a>
+                                <a class="hero-link" href="{{ route('defense.schedule') }}">View defense schedule</a>
                             @else
-                                <a class="btn btn-primary" href="{{ route('login') }}">Start now</a>
-                                @if (Route::has('register'))
-                                    <a class="btn btn-ghost" href="{{ route('register') }}">Request access</a>
-                                @endif
+                                <a class="nav-btn primary" href="{{ route('login') }}">Get started</a>
+                                <a class="hero-link" href="{{ route('books.index') }}">Explore published books</a>
                             @endauth
                         @endif
                     </div>
-                </div>
-                <div class="panel">
-                    <h2>Today at a glance</h2>
-                    <p class="muted">Your program timeline is now in one place.</p>
-                    <div class="stat-grid">
-                        <div class="stat">
-                            <h3>Proposals</h3>
-                            <span>Track reviews and approvals</span>
+                </article>
+
+                <aside class="hero-side">
+                    <div>
+                        <h2>Today at a glance</h2>
+                        <p>Track progress and decisions across proposal, feedback, versions, and defense milestones.</p>
+                    </div>
+                    <div class="snapshot-grid">
+                        <div class="snapshot">
+                            <strong>Proposals</strong>
+                            <span>Structured review and approval states</span>
                         </div>
-                        <div class="stat">
-                            <h3>Versions</h3>
-                            <span>Every revision stored</span>
+                        <div class="snapshot">
+                            <strong>Versions</strong>
+                            <span>Version history with final-thesis selection</span>
                         </div>
-                        <div class="stat">
-                            <h3>Defense</h3>
-                            <span>Unified schedule</span>
+                        <div class="snapshot">
+                            <strong>Defense</strong>
+                            <span>Committee workflow with clear timeline</span>
                         </div>
-                        <div class="stat">
-                            <h3>Groups</h3>
-                            <span>Manage cohorts easily</span>
+                        <div class="snapshot">
+                            <strong>Catalog</strong>
+                            <span>Public books published from approved finals</span>
                         </div>
                     </div>
+                </aside>
+            </section>
+
+            <section class="section">
+                <h3>How The Platform Flows</h3>
+                <p class="lead">A clear path from idea to defense, with accountability at every step.</p>
+                <div class="grid">
+                    <article class="feature">
+                        <span class="feature-tag">Stage 1</span>
+                        <h4>Submit and Assign</h4>
+                        <p>Students submit proposals, then coordinators and supervisors route ownership quickly.</p>
+                    </article>
+                    <article class="feature">
+                        <span class="feature-tag">Stage 2</span>
+                        <h4>Review and Iterate</h4>
+                        <p>Feedback, status changes, and version tracking stay organized in one thread.</p>
+                    </article>
+                    <article class="feature">
+                        <span class="feature-tag">Stage 3</span>
+                        <h4>Approve and Publish</h4>
+                        <p>Final versions are selected, defense outcomes are recorded, and books can be published.</p>
+                    </article>
                 </div>
             </section>
 
             <section class="section">
-                <h2 class="section-title">How it works</h2>
-                <div class="cards">
-                    <div class="card">
-                        <span class="tag">Step 1</span>
-                        <h3>Submit & assign</h3>
-                        <p>Students submit proposals, coordinators assign supervisors, and the workflow kicks in with notifications.</p>
-                    </div>
-                    <div class="card">
-                        <span class="tag">Step 2</span>
-                        <h3>Collaborate securely</h3>
-                        <p>Upload versions, capture feedback, and keep a verified audit trail for every milestone.</p>
-                    </div>
-                    <div class="card">
-                        <span class="tag">Step 3</span>
-                        <h3>Schedule defense</h3>
-                        <p>Set committees, assign examiners, and publish a clear defense timetable for all roles.</p>
-                    </div>
+                <h3>Designed For Every Role</h3>
+                <p class="lead">Each user gets focused tools without losing cross-team visibility.</p>
+                <div class="grid">
+                    <article class="feature">
+                        <span class="feature-tag">Students</span>
+                        <h4>Clear Status, Zero Ambiguity</h4>
+                        <p>Know what is pending, what changed, and what comes next without chasing updates.</p>
+                    </article>
+                    <article class="feature">
+                        <span class="feature-tag">Supervisors</span>
+                        <h4>Fast, Structured Decisions</h4>
+                        <p>Approve proposals, manage versions, and communicate with context from one screen.</p>
+                    </article>
+                    <article class="feature">
+                        <span class="feature-tag">Committee</span>
+                        <h4>Reliable Evaluation Trail</h4>
+                        <p>Defense decisions and evidence remain auditable and easy to retrieve.</p>
+                    </article>
                 </div>
             </section>
 
-            <section class="section">
-                <h2 class="section-title">Built for every role</h2>
-                <div class="cards">
-                    <div class="card">
-                        <span class="tag">Students</span>
-                        <p>Submit proposals, track versions, and follow defense status without guessing.</p>
-                    </div>
-                    <div class="card">
-                        <span class="tag">Supervisors</span>
-                        <p>See your students instantly, review work, and keep feedback structured.</p>
-                    </div>
-                    <div class="card">
-                        <span class="tag">Examiners</span>
-                        <p>Evaluate defenses with a clean rubric and publish results on time.</p>
-                    </div>
-                    <div class="card">
-                        <span class="tag">Admins</span>
-                        <p>Manage users, groups, and defense logistics from a single dashboard.</p>
-                    </div>
+            <section class="cta">
+                <div>
+                    <h4>Ready to run your thesis process without friction?</h4>
+                    <p>Launch the workspace and keep proposal, supervision, and defense aligned.</p>
                 </div>
+                @if (Route::has('login'))
+                    @auth
+                        <a class="nav-btn primary" href="{{ url('/dashboard') }}">Go to dashboard</a>
+                    @else
+                        <a class="nav-btn primary" href="{{ route('login') }}">Sign in now</a>
+                    @endauth
+                @endif
             </section>
 
-            <div class="footer">
-                Thesis Management System. Designed for fast, transparent academic workflows.
-            </div>
+            <p class="footer">{{ config('app.name', 'Thesis Management System') }} • Built for transparent academic workflows.</p>
         </div>
 
         <script>
-            const body = document.body;
-            const button = document.getElementById('themeToggle');
-            const storageKey = 'app-skin-dark';
+            (() => {
+                const root = document.documentElement;
+                const button = document.getElementById('themeToggle');
+                const storageKey = 'app-skin-dark';
 
-            const applyTheme = (theme) => {
-                if (theme === 'dark') {
-                    body.classList.add('theme-dark');
-                    button.textContent = 'Light theme';
-                    button.setAttribute('aria-pressed', 'true');
-                    localStorage.setItem(storageKey, 'app-skin-dark');
-                } else {
-                    body.classList.remove('theme-dark');
-                    button.textContent = 'Dark theme';
-                    button.setAttribute('aria-pressed', 'false');
-                    localStorage.setItem(storageKey, 'app-skin-light');
+                const applyTheme = (theme) => {
+                    const dark = theme === 'dark';
+                    root.classList.toggle('app-skin-dark', dark);
+                    if (button) {
+                        button.textContent = dark ? 'Light theme' : 'Dark theme';
+                        button.setAttribute('aria-pressed', dark ? 'true' : 'false');
+                    }
+                    try {
+                        localStorage.setItem(storageKey, dark ? 'app-skin-dark' : 'app-skin-light');
+                    } catch (_) {
+                        // Ignore localStorage access failures
+                    }
+                };
+
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let savedTheme = null;
+                try {
+                    savedTheme = localStorage.getItem(storageKey);
+                } catch (_) {
+                    savedTheme = null;
                 }
-            };
 
-            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-            const savedTheme = localStorage.getItem(storageKey);
-            const initialTheme = savedTheme ? (savedTheme === 'app-skin-dark' ? 'dark' : 'light') : (prefersDark ? 'dark' : 'light');
-            applyTheme(initialTheme);
+                const initialTheme = savedTheme ? (savedTheme === 'app-skin-dark' ? 'dark' : 'light') : (prefersDark ? 'dark' : 'light');
+                applyTheme(initialTheme);
 
-            button.addEventListener('click', () => {
-                const isDark = body.classList.contains('theme-dark');
-                const nextTheme = isDark ? 'light' : 'dark';
-                applyTheme(nextTheme);
-            });
+                if (button) {
+                    button.addEventListener('click', () => {
+                        const isDark = root.classList.contains('app-skin-dark');
+                        applyTheme(isDark ? 'light' : 'dark');
+                    });
+                }
+            })();
         </script>
     </body>
 </html>

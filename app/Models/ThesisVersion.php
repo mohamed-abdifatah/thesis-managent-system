@@ -8,6 +8,11 @@ class ThesisVersion extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'is_final_thesis' => 'boolean',
+        'finalized_at' => 'datetime',
+    ];
+
     public const STATUSES = [
         'draft',
         'reviewed',

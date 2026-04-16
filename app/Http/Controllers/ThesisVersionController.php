@@ -209,6 +209,8 @@ class ThesisVersionController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        $this->syncThesisStatusFromVersionReview($thesis, $request->status);
+
         $studentUser = $thesis->student?->user;
         $studentRecipients = collect();
 
@@ -265,6 +267,18 @@ class ThesisVersionController extends Controller
             ->filter()
             ->unique('id')
             ->each(fn ($user) => $user->notify(new ThesisVersionUploaded($thesis, $version)));
+    }
+
+    private function syncThesisStatusFromVersionReview(Thesis $thesis, string $versionStatus): void
+    {
+        if ($versionStatus === 'approved' && in_array($thesis->status, ['proposal_approved', 'in_progress'], true)) {
+            $thesis->update(['status' => 'ready_for_defense']);
+            return;
+        }
+
+        if ($versionStatus === 'needs_changes' && $thesis->status === 'ready_for_defense') {
+            $thesis->update(['status' => 'in_progress']);
+        }
     }
 
     private function resolveUnitId(Request $request, Thesis $thesis): ?int

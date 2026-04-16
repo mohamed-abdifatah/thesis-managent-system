@@ -1,10 +1,11 @@
 @php
+    $isAdminUser = auth()->user() && auth()->user()->hasRole(['admin', 'coordinator']);
     $isDashboard = request()->routeIs('dashboard');
     $isStudentMenu = request()->routeIs('proposals.*') || request()->routeIs('thesis.versions.*') || request()->routeIs('defense.schedule');
     $isSupervisorMenu = request()->routeIs('supervisor.*') || request()->routeIs('defense.schedule');
     $isExaminerMenu = request()->routeIs('examiner.*');
     $isAdminMenu = request()->routeIs('admin.*');
-    $isLibrarianMenu = request()->routeIs('profile.*');
+    $isAdminMenuOpen = $isAdminUser;
 @endphp
 
 <nav class="nxl-navigation">
@@ -33,8 +34,8 @@
                 </li>
 
                 @if(auth()->user() && auth()->user()->hasRole('student'))
-                    <li class="nxl-item nxl-hasmenu {{ $isStudentMenu ? 'is-open' : '' }}">
-                        <a href="javascript:void(0);" class="nxl-link {{ $isStudentMenu ? 'is-active' : '' }}">
+                    <li class="nxl-item nxl-hasmenu {{ $isStudentMenu ? 'nxl-trigger active' : '' }}">
+                        <a href="javascript:void(0);" class="nxl-link {{ $isStudentMenu ? 'is-active active' : '' }}">
                             <span class="nxl-micon"><i class="feather-file-text"></i></span>
                             <span class="nxl-mtext">My Thesis</span>
                             <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
@@ -54,8 +55,8 @@
                 @endif
 
                 @if(auth()->user() && auth()->user()->hasRole(['supervisor', 'cosupervisor']))
-                    <li class="nxl-item nxl-hasmenu {{ $isSupervisorMenu ? 'is-open' : '' }}">
-                        <a href="javascript:void(0);" class="nxl-link {{ $isSupervisorMenu ? 'is-active' : '' }}">
+                    <li class="nxl-item nxl-hasmenu {{ $isSupervisorMenu ? 'nxl-trigger active' : '' }}">
+                        <a href="javascript:void(0);" class="nxl-link {{ $isSupervisorMenu ? 'is-active active' : '' }}">
                             <span class="nxl-micon"><i class="feather-users"></i></span>
                             <span class="nxl-mtext">Supervision</span>
                             <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
@@ -85,25 +86,31 @@
                         <label>Library</label>
                     </li>
                     <li class="nxl-item">
-                        <a href="{{ route('profile.edit') }}" class="nxl-link {{ $isLibrarianMenu ? 'is-active' : '' }}">
+                        <a href="{{ route('library.catalog.index') }}" class="nxl-link {{ request()->routeIs('library.catalog.*') ? 'is-active' : '' }}">
+                            <span class="nxl-micon"><i class="feather-book"></i></span>
+                            <span class="nxl-mtext">Catalog Review</span>
+                        </a>
+                    </li>
+                    <li class="nxl-item">
+                        <a href="{{ route('profile.edit') }}" class="nxl-link {{ request()->routeIs('profile.*') ? 'is-active' : '' }}">
                             <span class="nxl-micon"><i class="feather-user"></i></span>
                             <span class="nxl-mtext">Profile Settings</span>
                         </a>
                     </li>
                 @endif
 
-                @if(auth()->user() && auth()->user()->hasRole(['admin', 'coordinator']))
+                @if($isAdminUser)
                     <li class="nxl-item nxl-caption mt-2">
                         <label>Administration</label>
                     </li>
 
-                    <li class="nxl-item nxl-hasmenu {{ $isAdminMenu ? 'is-open' : '' }}">
-                        <a href="javascript:void(0);" class="nxl-link {{ $isAdminMenu ? 'is-active' : '' }}">
+                    <li class="nxl-item nxl-hasmenu {{ $isAdminMenuOpen ? 'nxl-trigger active force-open' : '' }}">
+                        <a href="javascript:void(0);" class="nxl-link {{ $isAdminMenu ? 'is-active active' : '' }}">
                             <span class="nxl-micon"><i class="feather-settings"></i></span>
                             <span class="nxl-mtext">Management</span>
                             <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                         </a>
-                        <ul class="nxl-submenu" @if($isAdminMenu) style="display:block;" @endif>
+                        <ul class="nxl-submenu" @if($isAdminMenuOpen) style="display:block;" @endif>
                             <li class="nxl-item"><a class="nxl-link {{ request()->routeIs('admin.users.index') ? 'is-active' : '' }}" href="{{ route('admin.users.index') }}">Manage Users</a></li>
                             <li class="nxl-item"><a class="nxl-link {{ request()->routeIs('admin.users.create') ? 'is-active' : '' }}" href="{{ route('admin.users.create') }}">Add New User</a></li>
                             <li class="nxl-item"><a class="nxl-link {{ request()->routeIs('admin.groups.*') ? 'is-active' : '' }}" href="{{ route('admin.groups.index') }}">Student Groups</a></li>

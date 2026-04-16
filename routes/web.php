@@ -14,10 +14,18 @@ use App\Http\Controllers\ThesisVersionController;
 use App\Http\Controllers\InstallController;
 use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\ExaminerThesisController;
+use App\Http\Controllers\LibrarianCatalogController;
+use App\Http\Controllers\PublicCatalogController;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/books', [PublicCatalogController::class, 'index'])->name('books.index');
+Route::get('/books/{thesis}/download', [PublicCatalogController::class, 'download'])
+    ->middleware('throttle:120,1')
+    ->name('books.download');
+Route::get('/books/{thesis}', [PublicCatalogController::class, 'show'])->name('books.show');
 
 Route::get('/install', [InstallController::class, 'index'])->middleware('install')->name('install.index');
 Route::post('/install', [InstallController::class, 'store'])->middleware('install')->name('install.store');
@@ -86,6 +94,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::get('/my-students', [SupervisorController::class, 'myStudents'])->name('students.index');
         Route::get('/theses/{thesis}', [SupervisorController::class, 'showThesis'])->name('theses.show');
+        Route::patch('/theses/{thesis}/final-version', [SupervisorController::class, 'setFinalVersion'])->name('theses.final-version');
         Route::post('/proposals/{proposal}/review', [SupervisorController::class, 'reviewProposal'])->name('proposals.review');
     });
 
@@ -94,6 +103,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/defenses', [ExaminerDefenseController::class, 'index'])->name('defenses.index');
         Route::post('/defenses/{defense}/evaluation', [ExaminerDefenseController::class, 'storeEvaluation'])->name('defenses.evaluate');
         Route::get('/theses/{thesis}', [ExaminerThesisController::class, 'show'])->name('theses.show');
+    });
+
+    // Librarian Routes
+    Route::middleware('role:librarian')->prefix('library')->name('library.')->group(function () {
+        Route::get('/catalog', [LibrarianCatalogController::class, 'index'])->name('catalog.index');
+        Route::patch('/catalog/{thesis}/validate', [LibrarianCatalogController::class, 'validateCatalogEntry'])->name('catalog.validate');
+        Route::patch('/catalog/{thesis}/publish', [LibrarianCatalogController::class, 'publishCatalogEntry'])->name('catalog.publish');
+        Route::patch('/catalog/{thesis}/unpublish', [LibrarianCatalogController::class, 'unpublishCatalogEntry'])->name('catalog.unpublish');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

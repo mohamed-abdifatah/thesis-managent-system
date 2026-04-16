@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 
 use App\Models\Thesis;
+use App\Models\ThesisCatalogEvent;
 use App\Models\Proposal;
+use Illuminate\Support\Facades\DB;
 
 class SupervisorController extends Controller
 {
@@ -99,5 +101,73 @@ class SupervisorController extends Controller
         $proposal->thesis->update(['status' => $thesisStatus]);
 
         return back()->with('success', 'Proposal review submitted.');
+    }
+
+    public function setFinalVersion(Request $request, Thesis $thesis)
+    {
+        if ($thesis->supervisor_id !== auth()->user()->supervisor->id) {
+            abort(403);
+        }
+
+        $payload = $request->validate([
+            'final_version_id' => 'required|integer|exists:thesis_versions,id',
+        ]);
+
+        $version = $thesis->versions()
+            ->whereKey($payload['final_version_id'])
+            ->where('status', 'approved')
+            ->first();
+
+        if (!$version) {
+            return back()->with('error', 'Only approved versions can be set as final thesis.');
+        }
+
+        DB::transaction(function () use ($thesis, $version) {
+            $thesis->versions()->where('is_final_thesis', true)->update([
+                'is_final_thesis' => false,
+                'finalized_at' => null,
+            ]);
+
+            $version->update([
+                'is_final_thesis' => true,
+                'finalized_at' => now(),
+            ]);
+
+            $isDefenseCompleted = $thesis->defense()
+                ->where('status', 'completed')
+                ->exists();
+
+            if ($isDefenseCompleted) {
+                $thesis->update([
+                    'status' => 'completed',
+                    'is_library_approved' => true,
+                    'library_approved_by' => auth()->id(),
+                    'library_approved_at' => now(),
+                    'is_public' => true,
+                    'published_by' => auth()->id(),
+                    'published_at' => now(),
+                ]);
+
+                ThesisCatalogEvent::create([
+                    'thesis_id' => $thesis->id,
+                    'user_id' => auth()->id(),
+                    'action' => 'published',
+                    'notes' => 'Final thesis version selected by supervisor after completed defense.',
+                    'metadata' => [
+                        'final_version_id' => $version->id,
+                        'final_version_number' => $version->version_number,
+                        'source' => 'supervisor.final_version',
+                    ],
+                ]);
+            }
+        });
+
+        $isNowPublic = $thesis->fresh()->is_public;
+
+        if ($isNowPublic) {
+            return back()->with('success', 'Final thesis version set to v' . $version->version_number . ' and published to the books portal.');
+        }
+
+        return back()->with('success', 'Final thesis version set to v' . $version->version_number . '. It will become public after defense is marked completed.');
     }
 }

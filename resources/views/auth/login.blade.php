@@ -1,171 +1,111 @@
 <x-guest-layout>
     <style>
-        .signin-shell {
+        .auth-form {
             width: 100%;
-            max-width: 410px;
-            margin: 0 auto;
-            color: #101828;
+            color: var(--ink);
         }
 
-        .signin-head {
-            margin-bottom: 24px;
+        .auth-form-head {
+            margin-bottom: 18px;
         }
 
-        .signin-title {
+        .auth-form-title {
             margin: 0;
-            font-family: 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
-            font-size: clamp(1.95rem, 3.2vw, 2.35rem);
-            font-weight: 700;
+            font-size: clamp(1.5rem, 3vw, 1.95rem);
             letter-spacing: -0.03em;
-            color: #111928;
+            line-height: 1.14;
         }
 
-        .signin-subtitle {
+        .auth-form-subtitle {
             margin: 8px 0 0;
-            color: #5a6b82;
-            font-size: 0.92rem;
-            line-height: 1.5;
+            color: var(--muted);
+            font-size: 0.89rem;
+            line-height: 1.62;
         }
 
-        .signin-status {
+        .auth-group {
             margin-bottom: 14px;
-            background: #e8f1ff;
-            border: 1px solid #bfd5ff;
-            color: #0f2f75;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            padding: 10px 12px;
-        }
-
-        .signin-group {
             text-align: left;
-            margin-bottom: 16px;
         }
 
-        .signin-label {
-            display: block;
-            margin-bottom: 8px;
-            font-size: 11px;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-            color: #344054;
-            font-weight: 700;
-        }
-
-        .signin-control {
-            width: 100%;
-            border: 1px solid #d0dbea;
-            background: #ffffff;
-            border-radius: 14px;
-            height: 50px;
-            padding: 0 14px;
-            font-size: 0.92rem;
-            font-weight: 600;
-            color: #111928;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        .signin-control::placeholder {
-            color: #98a6ba;
-            font-weight: 500;
-        }
-
-        .signin-control:focus {
-            outline: 0;
-            border-color: #4e7cff;
-            box-shadow: 0 0 0 4px rgba(78, 124, 255, 0.15);
-        }
-
-        .signin-control.is-invalid {
-            border-color: #ef4444;
-            box-shadow: none;
-        }
-
-        .signin-feedback {
+        .auth-group .field-error {
             margin-top: 6px;
-            color: #cf2121;
-            font-size: 0.81rem;
-            list-style: none;
-            padding-left: 0;
             margin-bottom: 0;
+            padding-left: 0;
+            list-style: none;
         }
 
-        .signin-meta {
-            margin: 2px 0 20px;
+        .auth-meta {
+            margin: 2px 0 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .signin-remember {
+        .auth-remember {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            font-size: 0.86rem;
-            color: #475467;
-            font-weight: 600;
+            font-size: 0.84rem;
+            color: var(--muted);
+            font-weight: 700;
         }
 
-        .signin-remember input {
+        .auth-remember input {
             width: 16px;
             height: 16px;
-            accent-color: #375dfb;
+            accent-color: #1f58d8;
             margin: 0;
         }
 
-        .signin-forgot {
-            color: #355ef8;
-            text-decoration: none;
-            font-size: 0.86rem;
+        .auth-link {
+            font-size: 0.84rem;
             font-weight: 700;
         }
 
-        .signin-forgot:hover {
-            text-decoration: underline;
-            color: #1939b7;
-        }
-
-        .signin-submit {
+        .auth-submit {
             width: 100%;
-            height: 50px;
+            min-height: 48px;
             border: 0;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            font-weight: 700;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 800;
             letter-spacing: 0.04em;
             text-transform: uppercase;
-            color: #ffffff;
-            background: linear-gradient(135deg, #375dfb 0%, #1d4ed8 100%);
-            box-shadow: 0 16px 26px rgba(29, 78, 216, 0.22);
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            background: linear-gradient(145deg, var(--accent), var(--accent-strong));
+            box-shadow: 0 14px 24px rgba(217, 79, 32, 0.28);
+            transition: transform 0.16s ease, box-shadow 0.16s ease;
         }
 
-        .signin-submit:hover {
+        .auth-submit:hover {
             transform: translateY(-1px);
-            box-shadow: 0 20px 28px rgba(29, 78, 216, 0.26);
+            box-shadow: 0 18px 28px rgba(217, 79, 32, 0.31);
+        }
+
+        .auth-register-cta {
+            margin-top: 14px;
+            color: var(--muted);
+            text-align: center;
+            font-size: 0.84rem;
         }
     </style>
 
-    <div class="signin-shell">
-        <div class="signin-head">
-            <h1 class="signin-title">Sign In</h1>
-            <p class="signin-subtitle">Use your account credentials to access the dashboard.</p>
+    <div class="auth-form">
+        <div class="auth-form-head">
+            <h2 class="auth-form-title">Sign in to your workspace</h2>
+            <p class="auth-form-subtitle">Access your dashboard to continue proposal reviews, thesis updates, and defense progress tracking.</p>
         </div>
-
-        <!-- Session Status -->
-        <x-auth-session-status class="signin-status" :status="session('status')" />
 
         <form method="POST" action="{{ route('login') }}">
             @csrf
 
-            <!-- Email Address -->
-            <div class="signin-group">
-                <label class="signin-label" for="email">{{ __('Email') }}</label>
+            <div class="auth-group">
+                <label for="email">{{ __('Email') }}</label>
                 <input
                     id="email"
-                    class="signin-control @error('email') is-invalid @enderror"
+                    class="form-control"
                     type="email"
                     name="email"
                     value="{{ old('email') }}"
@@ -174,38 +114,44 @@
                     autocomplete="username"
                     placeholder="you@example.com"
                 >
-                <x-input-error :messages="$errors->get('email')" class="signin-feedback" />
+                <x-input-error :messages="$errors->get('email')" class="field-error" />
             </div>
 
-            <!-- Password -->
-            <div class="signin-group">
-                <label class="signin-label" for="password">{{ __('Password') }}</label>
+            <div class="auth-group">
+                <label for="password">{{ __('Password') }}</label>
                 <input
                     id="password"
-                    class="signin-control @error('password') is-invalid @enderror"
+                    class="form-control"
                     type="password"
                     name="password"
                     required
                     autocomplete="current-password"
                     placeholder="Enter your password"
                 >
-                <x-input-error :messages="$errors->get('password')" class="signin-feedback" />
+                <x-input-error :messages="$errors->get('password')" class="field-error" />
             </div>
 
-            <div class="signin-meta">
-                <label class="signin-remember" for="remember_me">
+            <div class="auth-meta">
+                <label class="auth-remember" for="remember_me">
                     <input id="remember_me" type="checkbox" name="remember" @checked(old('remember'))>
                     <span>{{ __('Keep me logged in') }}</span>
                 </label>
 
                 @if (Route::has('password.request'))
-                    <a class="signin-forgot" href="{{ route('password.request') }}">
+                    <a class="auth-link" href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 @endif
             </div>
 
-            <button type="submit" class="signin-submit">{{ __('Sign In') }}</button>
+            <button type="submit" class="auth-submit">{{ __('Sign In') }}</button>
         </form>
+
+        @if (Route::has('register'))
+            <p class="auth-register-cta">
+                Need an account?
+                <a class="auth-link" href="{{ route('register') }}">Create one</a>
+            </p>
+        @endif
     </div>
 </x-guest-layout>
