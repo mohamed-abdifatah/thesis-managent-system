@@ -160,13 +160,20 @@
                 width: 36px;
                 height: 36px;
                 border-radius: 10px;
-                background: linear-gradient(135deg, var(--ta-primary) 0%, var(--ta-primary-deep) 100%);
-                color: #fff;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 1rem;
+                overflow: hidden;
+                border: 1px solid rgba(15, 23, 42, 0.12);
+                background: #ffffff;
                 flex-shrink: 0;
+            }
+
+            .ta-brand-icon img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
             }
 
             .ta-brand-text {

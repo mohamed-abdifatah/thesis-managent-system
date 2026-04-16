@@ -13,7 +13,7 @@
         <div class="m-header">
             <a href="{{ route('dashboard') }}" class="b-brand ta-brand">
                 <span class="ta-brand-icon">
-                    <i class="feather-book-open"></i>
+                    <img src="{{ asset('assets/images/rsu.jpg') }}" alt="RSU logo">
                 </span>
                 <span class="ta-brand-text">
                     <h4 class="app-brand-title">Thesis Hub</h4>

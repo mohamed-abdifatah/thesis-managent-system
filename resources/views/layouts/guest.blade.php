@@ -503,6 +503,21 @@
                 }
             }
 
+            @media (max-width: 860px) {
+                .site-header {
+                    align-items: flex-start;
+                }
+
+                .brand {
+                    width: 100%;
+                }
+
+                .site-nav {
+                    width: 100%;
+                    justify-content: flex-start;
+                }
+            }
+
             @media (max-width: 640px) {
                 .page {
                     padding: 14px 12px 36px;
@@ -511,19 +526,45 @@
                 .site-header {
                     top: 10px;
                     border-radius: 14px;
+                    padding: 10px;
+                    gap: 10px;
+                }
+
+                .brand {
+                    width: 100%;
+                }
+
+                .brand-mark {
+                    width: 38px;
+                    height: 38px;
+                    border-radius: 12px;
                 }
 
                 .brand-copy strong {
                     font-size: 0.88rem;
                 }
 
+                .brand-copy span {
+                    font-size: 0.64rem;
+                }
+
                 .site-nav {
                     width: 100%;
+                    display: grid;
+                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                    gap: 8px;
                 }
 
                 .nav-btn {
-                    flex: 1 1 auto;
+                    width: 100%;
                     text-align: center;
+                    justify-content: center;
+                    padding: 8px 12px;
+                    min-height: 38px;
+                }
+
+                .site-nav .nav-btn.primary {
+                    grid-column: 1 / -1;
                 }
 
                 .auth-info,
@@ -541,6 +582,16 @@
 
                 .auth-title {
                     font-size: clamp(1.68rem, 9vw, 2.15rem);
+                }
+            }
+
+            @media (max-width: 430px) {
+                .site-nav {
+                    grid-template-columns: 1fr;
+                }
+
+                .brand-copy span {
+                    display: none;
                 }
             }
         </style>
@@ -646,13 +697,18 @@
             (() => {
                 const root = document.documentElement;
                 const button = document.getElementById('themeToggle');
+                const buttonLabel = button ? button.querySelector('[data-theme-label]') : null;
                 const storageKey = 'app-skin-dark';
 
                 const applyTheme = (theme) => {
                     const dark = theme === 'dark';
                     root.classList.toggle('app-skin-dark', dark);
                     if (button) {
-                        button.textContent = dark ? 'Light theme' : 'Dark theme';
+                        if (buttonLabel) {
+                            buttonLabel.textContent = dark ? 'Light theme' : 'Dark theme';
+                        } else {
+                            button.textContent = dark ? 'Light theme' : 'Dark theme';
+                        }
                         button.setAttribute('aria-pressed', dark ? 'true' : 'false');
                     }
                     try {
