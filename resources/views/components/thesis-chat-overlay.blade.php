@@ -17,6 +17,10 @@
         || filled(old('thesis_version_id'))
         || $errors->has('topic')
         || $errors->has('thesis_version_id');
+
+    $messageCount = $items->count();
+    $participantCount = $items->pluck('user_id')->filter()->unique()->count();
+    $chatThesisTitle = \Illuminate\Support\Str::limit((string) ($thesis->title ?? 'Thesis Discussion'), 44);
 @endphp
 
 <style>
@@ -61,26 +65,143 @@
     }
 
     .wa-chat-head {
-        background: linear-gradient(135deg, #174aa7, #1b6ad7);
+        position: relative;
+        overflow: hidden;
+        background:
+            linear-gradient(120deg, #0f4dbf 0%, #2a68d8 56%, #4e7ee3 100%);
         color: #f2f7ff;
-        padding: 14px 16px;
+        padding: 12px 14px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 12px;
+        gap: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    .wa-chat-head h5 {
+    .wa-chat-head::before,
+    .wa-chat-head::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        pointer-events: none;
+    }
+
+    .wa-chat-head::before {
+        width: 180px;
+        height: 180px;
+        right: -70px;
+        top: -92px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 72%);
+    }
+
+    .wa-chat-head::after {
+        width: 140px;
+        height: 140px;
+        left: -68px;
+        bottom: -90px;
+        background: radial-gradient(circle, rgba(12, 32, 80, 0.22) 0%, transparent 74%);
+    }
+
+    .wa-head-main {
+        position: relative;
+        z-index: 1;
+        min-width: 0;
+        flex: 1;
+        display: grid;
+        gap: 6px;
+    }
+
+    .wa-head-brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .wa-head-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        background: rgba(6, 22, 53, 0.2);
+        color: #eaf2ff;
+        flex: 0 0 auto;
+    }
+
+    .wa-head-copy {
+        min-width: 0;
+    }
+
+    .wa-chat-title {
         margin: 0;
-        font-size: 0.98rem;
-        font-weight: 700;
-        letter-spacing: 0.02em;
+        color: #f6f9ff !important;
+        font-size: 1.02rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        line-height: 1.12;
     }
 
     .wa-chat-sub {
-        font-size: 0.76rem;
-        opacity: 0.88;
+        color: rgba(235, 243, 255, 0.9);
+        font-size: 0.74rem;
+        line-height: 1.3;
         margin-top: 2px;
+        display: block;
+    }
+
+    .wa-head-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .wa-head-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        background: rgba(8, 24, 54, 0.26);
+        color: #e9f1ff;
+        font-size: 0.64rem;
+        font-weight: 700;
+        line-height: 1;
+        padding: 4px 9px;
+    }
+
+    .wa-head-chip i {
+        font-size: 0.68rem;
+    }
+
+    .wa-head-close {
+        position: relative;
+        z-index: 1;
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        border-radius: 12px;
+        background: rgba(6, 22, 53, 0.18);
+        color: #f0f6ff;
+        min-height: 34px;
+        min-width: 34px;
+        padding: 6px 11px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        font-size: 0.69rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        transition: all 0.18s ease;
+    }
+
+    .wa-head-close:hover {
+        border-color: rgba(255, 255, 255, 0.62);
+        background: rgba(6, 22, 53, 0.34);
+        color: #ffffff;
     }
 
     .wa-chat-list {
@@ -221,6 +342,42 @@
         flex-wrap: wrap;
         gap: 6px;
         margin-bottom: 5px;
+    }
+
+    .wa-topic-wrap {
+        margin-bottom: 6px;
+    }
+
+    .wa-topic-pill {
+        display: inline-flex;
+        align-items: flex-start;
+        gap: 6px;
+        max-width: 100%;
+        border-radius: 999px;
+        border: 1px solid #d4e3f8;
+        background: #eef4ff;
+        color: #224674;
+        font-size: 0.73rem;
+        font-weight: 700;
+        line-height: 1.25;
+        padding: 5px 10px;
+    }
+
+    .wa-topic-pill i {
+        margin-top: 1px;
+        font-size: 0.72rem;
+        flex: 0 0 auto;
+    }
+
+    .wa-topic-pill span {
+        display: block;
+        word-break: break-word;
+    }
+
+    .wa-msg.is-mine .wa-topic-pill {
+        border-color: #bde5bf;
+        background: #e8f8e4;
+        color: #255f34;
     }
 
     .wa-chip {
@@ -376,8 +533,25 @@
     }
 
     html.app-skin-dark .wa-chat-head {
-        background: linear-gradient(135deg, #183a70, #2457a1);
+        background:
+            linear-gradient(120deg, #173865 0%, #24518f 56%, #3363a8 100%);
         color: #ebf2ff;
+    }
+
+    html.app-skin-dark .wa-head-icon,
+    html.app-skin-dark .wa-head-chip,
+    html.app-skin-dark .wa-head-close {
+        border-color: rgba(195, 215, 246, 0.35);
+        background: rgba(6, 19, 43, 0.36);
+    }
+
+    html.app-skin-dark .wa-head-chip,
+    html.app-skin-dark .wa-head-close {
+        color: #e6efff;
+    }
+
+    html.app-skin-dark .wa-chat-sub {
+        color: rgba(223, 236, 255, 0.92);
     }
 
     html.app-skin-dark .wa-chat-list {
@@ -413,6 +587,18 @@
         color: #c6d3e5;
         background: #1f2c3f;
         border-color: rgba(255, 255, 255, 0.14);
+    }
+
+    html.app-skin-dark .wa-topic-pill {
+        border-color: rgba(136, 171, 224, 0.38);
+        background: #1f3047;
+        color: #d1e2f8;
+    }
+
+    html.app-skin-dark .wa-msg.is-mine .wa-topic-pill {
+        border-color: rgba(103, 214, 155, 0.42);
+        background: #1e4b32;
+        color: #d3f6df;
     }
 
     html.app-skin-dark .wa-menu-btn {
@@ -524,6 +710,28 @@
             gap: 6px;
         }
 
+        .wa-chat-head {
+            padding: 10px;
+            align-items: flex-start;
+        }
+
+        .wa-chat-sub {
+            display: none;
+        }
+
+        .wa-head-chip.hide-mobile {
+            display: none;
+        }
+
+        .wa-head-close {
+            padding: 6px 8px;
+            border-radius: 10px;
+        }
+
+        .wa-head-close span {
+            display: none;
+        }
+
         .wa-compose-extra .row > [class*="col-"] {
             margin-bottom: 8px;
         }
@@ -538,13 +746,34 @@
 <div class="wa-chat-overlay d-none" data-wa-chatbox="{{ $chatKey }}" role="dialog" aria-modal="true" aria-label="Thesis chat dialog">
     <div class="wa-chat-panel">
         <header class="wa-chat-head">
-            <div>
-                <h5>Thesis Chat</h5>
-                <div class="wa-chat-sub">Real-time style conversation with editable messages</div>
+            <div class="wa-head-main">
+                <div class="wa-head-brand">
+                    <span class="wa-head-icon"><i class="feather-message-circle"></i></span>
+                    <div class="wa-head-copy">
+                        <h5 class="wa-chat-title">Thesis Chat</h5>
+                        <span class="wa-chat-sub">Focused discussion for faster reviews and decisions</span>
+                    </div>
+                </div>
+
+                <div class="wa-head-meta">
+                    <span class="wa-head-chip">
+                        <i class="feather-book-open"></i>
+                        {{ $chatThesisTitle }}
+                    </span>
+                    <span class="wa-head-chip hide-mobile">
+                        <i class="feather-users"></i>
+                        {{ $participantCount }} {{ \Illuminate\Support\Str::plural('member', $participantCount) }}
+                    </span>
+                    <span class="wa-head-chip hide-mobile">
+                        <i class="feather-message-square"></i>
+                        {{ $messageCount }} {{ \Illuminate\Support\Str::plural('message', $messageCount) }}
+                    </span>
+                </div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline-light" data-wa-chat-toggle="{{ $chatKey }}">
-                <i class="feather-x me-1"></i>
-                Close
+
+            <button type="button" class="wa-head-close" data-wa-chat-toggle="{{ $chatKey }}" aria-label="Close chat">
+                <i class="feather-x"></i>
+                <span>Close</span>
             </button>
         </header>
 
@@ -553,6 +782,8 @@
                 @php
                     $isMine = $feedback->user_id === auth()->id();
                     $isEdited = $feedback->updated_at && $feedback->updated_at->gt($feedback->created_at);
+                    $messageTitle = trim((string) ($feedback->topic ?? ''));
+                    $hasMessageTitle = $messageTitle !== '' && $messageTitle !== '-';
                 @endphp
                 <article class="wa-msg {{ $isMine ? 'is-mine' : '' }}" data-wa-message="{{ $feedback->id }}">
                     <div class="wa-bubble">
@@ -584,17 +815,21 @@
                             </span>
                         </div>
 
-                        @if($feedback->topic || $feedback->thesisVersion)
+                        @if($hasMessageTitle)
+                            <div class="wa-topic-wrap">
+                                <div class="wa-topic-pill" title="{{ $messageTitle }}">
+                                    <i class="feather-tag"></i>
+                                    <span>{{ $messageTitle }}</span>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($feedback->thesisVersion)
                             <div class="wa-tags">
-                                @if($feedback->topic)
-                                    <span class="wa-chip"><i class="feather-tag"></i> {{ $feedback->topic }}</span>
-                                @endif
-                                @if($feedback->thesisVersion)
-                                    <span class="wa-chip">
-                                        <i class="feather-file-text"></i>
-                                        {{ $feedback->thesisVersion->unit?->name ?? 'Unit' }} {{ $feedback->thesisVersion->unit_number ?? '' }}
-                                    </span>
-                                @endif
+                                <span class="wa-chip">
+                                    <i class="feather-file-text"></i>
+                                    {{ $feedback->thesisVersion->unit?->name ?? 'Unit' }} {{ $feedback->thesisVersion->unit_number ?? '' }}
+                                </span>
                             </div>
                         @endif
 
@@ -613,7 +848,7 @@
                             @csrf
                             @method('PATCH')
                             <div class="wa-edit-grid">
-                                <input type="text" name="topic" class="form-control" value="{{ $feedback->topic }}" placeholder="Topic (optional)">
+                                <input type="text" name="topic" class="form-control" value="{{ $feedback->topic }}" placeholder="Title (optional)">
                                 <textarea name="comment" rows="3" class="form-control" required>{{ $feedback->comment }}</textarea>
                                 <div class="wa-edit-actions">
                                     <button type="button" class="btn btn-light btn-sm" data-wa-edit-cancel="{{ $feedback->id }}">Cancel</button>
@@ -653,8 +888,8 @@
                 <div class="wa-compose-extra {{ $showComposeExtras ? '' : 'd-none' }}" data-wa-compose-extra>
                     <div class="row g-2">
                         <div class="col-12 col-md-4">
-                            <label class="wa-compose-label" for="wa-topic-{{ $chatKey }}">Topic</label>
-                            <input id="wa-topic-{{ $chatKey }}" type="text" name="topic" class="form-control" placeholder="Topic (optional)" value="{{ old('topic') }}">
+                            <label class="wa-compose-label" for="wa-topic-{{ $chatKey }}">Title</label>
+                            <input id="wa-topic-{{ $chatKey }}" type="text" name="topic" class="form-control" placeholder="Optional title" value="{{ old('topic') }}">
                         </div>
                         <div class="col-12 col-md-8">
                             <label class="wa-compose-label" for="wa-version-{{ $chatKey }}">Link to Version</label>

@@ -11,13 +11,20 @@ use Illuminate\Support\Facades\DB;
 
 class SupervisorController extends Controller
 {
+    private function supervisorProfileOrFail()
+    {
+        $supervisor = auth()->user()?->supervisor;
+
+        if (!$supervisor) {
+            abort(403, 'Supervisor profile is not assigned to this account.');
+        }
+
+        return $supervisor;
+    }
+
     public function myStudents()
     {
-        $supervisor = auth()->user()->supervisor;
-        // Check if user is actually a supervisor
-        if (!$supervisor) {
-            abort(403, 'User is not a supervisor profile');
-        }
+        $supervisor = $this->supervisorProfileOrFail();
 
         $groups = $supervisor->groups()
             ->with(['department', 'students.user'])
@@ -48,8 +55,10 @@ class SupervisorController extends Controller
 
     public function showThesis(Thesis $thesis)
     {
+        $supervisor = $this->supervisorProfileOrFail();
+
         // Security check: ensure this thesis belongs to the supervisor
-        if ($thesis->supervisor_id !== auth()->user()->supervisor->id) {
+        if ((int) $thesis->supervisor_id !== (int) $supervisor->id) {
             abort(403);
         }
 
@@ -69,13 +78,15 @@ class SupervisorController extends Controller
 
     public function reviewProposal(Request $request, Proposal $proposal)
     {
+        $supervisor = $this->supervisorProfileOrFail();
+
         $request->validate([
             'status' => 'required|in:approved,rejected,revision_required',
             'comments' => 'required|string',
         ]);
 
         // Security check
-        if ($proposal->thesis->supervisor_id !== auth()->user()->supervisor->id) {
+        if ((int) $proposal->thesis->supervisor_id !== (int) $supervisor->id) {
             abort(403);
         }
 
@@ -105,7 +116,9 @@ class SupervisorController extends Controller
 
     public function setFinalVersion(Request $request, Thesis $thesis)
     {
-        if ($thesis->supervisor_id !== auth()->user()->supervisor->id) {
+        $supervisor = $this->supervisorProfileOrFail();
+
+        if ((int) $thesis->supervisor_id !== (int) $supervisor->id) {
             abort(403);
         }
 

@@ -191,6 +191,66 @@
             letter-spacing: -0.01em;
         }
 
+        .sv-kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .sv-kpi-card {
+            border: 1px solid var(--sv-border);
+            border-radius: 14px;
+            background: var(--sv-surface);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .sv-kpi-label {
+            margin: 0;
+            font-size: 0.66rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--sv-muted);
+            font-weight: 800;
+        }
+
+        .sv-kpi-value {
+            margin: 4px 0 0;
+            color: var(--sv-ink);
+            font-size: 1.2rem;
+            line-height: 1;
+            font-weight: 800;
+        }
+
+        .sv-kpi-note {
+            margin: 5px 0 0;
+            color: var(--sv-muted);
+            font-size: 0.72rem;
+        }
+
+        .sv-kpi-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            border: 1px solid #d5e4fb;
+            background: var(--sv-primary-soft);
+            color: var(--sv-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+        }
+
+        html.app-skin-dark .sv-kpi-icon {
+            border-color: #35507a;
+            color: #acc6ff;
+        }
+
         .sv-soft-block {
             border: 1px solid var(--sv-border);
             border-radius: 14px;
@@ -590,6 +650,10 @@
                 padding: 16px;
             }
 
+            .sv-kpi-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
             .sv-breadcrumb {
                 font-size: 0.78rem;
             }
@@ -648,6 +712,10 @@
 
         $currentFinalVersion = $thesis->versions->firstWhere('is_final_thesis', true);
         $chatItems = $thesis->feedbacks->sortBy('created_at');
+        $approvedVersionsCount = $thesis->versions->where('status', 'approved')->count();
+        $revisionRequiredCount = $thesis->versions->where('status', 'revision_required')->count();
+        $feedbackCount = $chatItems->count();
+        $publicationLabel = $thesis->is_public ? 'Published' : 'Private';
 
         $isProposalSubmitted = !is_null($latestProposal);
         $isProposalApproved = in_array($thesis->status, ['proposal_approved', 'in_progress', 'completed'], true);
@@ -691,6 +759,44 @@
         @if(session('error'))
             <div class="alert alert-danger border-0 shadow-sm">{{ session('error') }}</div>
         @endif
+
+        <div class="sv-kpi-grid">
+            <article class="sv-kpi-card">
+                <div>
+                    <p class="sv-kpi-label">Approved Versions</p>
+                    <p class="sv-kpi-value">{{ $approvedVersionsCount }}</p>
+                    <p class="sv-kpi-note">Ready to finalize</p>
+                </div>
+                <span class="sv-kpi-icon"><i class="feather-check-circle"></i></span>
+            </article>
+
+            <article class="sv-kpi-card">
+                <div>
+                    <p class="sv-kpi-label">Revision Requests</p>
+                    <p class="sv-kpi-value">{{ $revisionRequiredCount }}</p>
+                    <p class="sv-kpi-note">Need student updates</p>
+                </div>
+                <span class="sv-kpi-icon"><i class="feather-refresh-cw"></i></span>
+            </article>
+
+            <article class="sv-kpi-card">
+                <div>
+                    <p class="sv-kpi-label">Chat Messages</p>
+                    <p class="sv-kpi-value">{{ $feedbackCount }}</p>
+                    <p class="sv-kpi-note">Discussion history</p>
+                </div>
+                <span class="sv-kpi-icon"><i class="feather-message-circle"></i></span>
+            </article>
+
+            <article class="sv-kpi-card">
+                <div>
+                    <p class="sv-kpi-label">Catalog State</p>
+                    <p class="sv-kpi-value">{{ $publicationLabel }}</p>
+                    <p class="sv-kpi-note">Books portal visibility</p>
+                </div>
+                <span class="sv-kpi-icon"><i class="feather-book-open"></i></span>
+            </article>
+        </div>
 
         <div class="row g-4">
             <div class="col-12 col-xl-8">

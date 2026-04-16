@@ -53,19 +53,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('role:student')
         ->name('thesis.versions.update');
     Route::patch('/thesis/versions/{version}/status', [ThesisVersionController::class, 'updateStatus'])
-        ->middleware('role:supervisor,examiner')
+        ->middleware('role:supervisor,cosupervisor,examiner')
         ->name('thesis.versions.status');
     Route::post('/thesis/versions/{version}/feedback', [FeedbackController::class, 'storeVersion'])
-        ->middleware('role:student,supervisor,examiner')
+        ->middleware('role:student,supervisor,cosupervisor,examiner')
         ->name('thesis.versions.feedback.store');
     Route::post('/thesis/{thesis}/feedback', [FeedbackController::class, 'storeThesis'])
-        ->middleware('role:student,supervisor,examiner')
+        ->middleware('role:student,supervisor,cosupervisor,examiner')
         ->name('thesis.feedback.store');
     Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])
-        ->middleware('role:student,supervisor,examiner')
+        ->middleware('role:student,supervisor,cosupervisor,examiner')
         ->name('feedback.update');
     Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])
-        ->middleware('role:student,supervisor,examiner')
+        ->middleware('role:student,supervisor,cosupervisor,examiner')
         ->name('feedback.destroy');
     Route::get('/defense/schedule', [DefenseScheduleController::class, 'index'])->name('defense.schedule');
 
@@ -97,7 +97,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // Supervisor Routes
-    Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
+    Route::middleware('role:supervisor,cosupervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::get('/my-students', [SupervisorController::class, 'myStudents'])->name('students.index');
         Route::get('/theses/{thesis}', [SupervisorController::class, 'showThesis'])->name('theses.show');
         Route::patch('/theses/{thesis}/final-version', [SupervisorController::class, 'setFinalVersion'])->name('theses.final-version');
