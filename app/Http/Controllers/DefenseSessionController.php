@@ -13,11 +13,73 @@ class DefenseSessionController extends Controller
 {
     public function index()
     {
-        $sessions = DefenseSession::with(['thesis.student.user', 'committeeMembers.user'])
-            ->latest('scheduled_at')
-            ->paginate(10);
+        $perPage = (int) request('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-        return view('admin.defenses.index', compact('sessions'));
+        $search = trim((string) request('q', ''));
+        $statusFilter = trim((string) request('status', ''));
+
+        $statusOptions = [
+            'scheduled' => 'Scheduled',
+            'completed' => 'Completed',
+            'cancelled' => 'Cancelled',
+        ];
+
+        if ($statusFilter !== '' && !array_key_exists($statusFilter, $statusOptions)) {
+            $statusFilter = '';
+        }
+
+        $query = DefenseSession::with(['thesis.student.user', 'committeeMembers.user']);
+
+        if ($search !== '') {
+            $query->where(function ($sessionQuery) use ($search) {
+                $sessionQuery
+                    ->where('location', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('thesis', function ($thesisQuery) use ($search) {
+                        $thesisQuery
+                            ->where('title', 'like', "%{$search}%")
+                            ->orWhereHas('student.user', function ($studentQuery) use ($search) {
+                                $studentQuery
+                                    ->where('name', 'like', "%{$search}%")
+                                    ->orWhere('email', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        if ($statusFilter !== '') {
+            $query->where('status', $statusFilter);
+        }
+
+        $filteredCount = (clone $query)->count();
+
+        $sessions = $query
+            ->latest('scheduled_at')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $totalSessions = DefenseSession::count();
+        $scheduledSessions = DefenseSession::where('status', 'scheduled')->count();
+        $completedSessions = DefenseSession::where('status', 'completed')->count();
+        $upcomingSessions = DefenseSession::where('status', 'scheduled')
+            ->where('scheduled_at', '>=', now())
+            ->count();
+
+        return view('admin.defenses.index', compact(
+            'sessions',
+            'perPage',
+            'search',
+            'statusFilter',
+            'statusOptions',
+            'filteredCount',
+            'totalSessions',
+            'scheduledSessions',
+            'completedSessions',
+            'upcomingSessions'
+        ));
     }
 
     public function create()

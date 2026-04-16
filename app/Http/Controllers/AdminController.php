@@ -25,6 +25,7 @@ class AdminController extends Controller
         }
 
         $roleFilter = trim((string) request('role', ''));
+        $search = trim((string) request('q', ''));
 
         $query = User::with(['role', 'department']);
 
@@ -34,6 +35,24 @@ class AdminController extends Controller
             });
         }
 
+        if ($search !== '') {
+            $query->where(function ($searchQuery) use ($search) {
+                $searchQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhereHas('role', function ($roleQuery) use ($search) {
+                        $roleQuery->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('department', function ($departmentQuery) use ($search) {
+                        $departmentQuery
+                            ->where('code', 'like', "%{$search}%")
+                            ->orWhere('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        $filteredCount = (clone $query)->count();
+
         $users = $query
             ->orderBy('name')
             ->paginate($perPage)
@@ -41,7 +60,29 @@ class AdminController extends Controller
 
         $roles = Role::orderBy('name')->get();
 
-        return view('admin.users.index', compact('users', 'roles', 'perPage', 'roleFilter'));
+        $totalUsers = User::count();
+        $roleCounts = User::query()
+            ->join('roles', 'roles.id', '=', 'users.role_id')
+            ->selectRaw('LOWER(roles.name) as role_name, COUNT(*) as total')
+            ->groupBy('roles.name')
+            ->pluck('total', 'role_name');
+
+        $studentCount = (int) ($roleCounts['student'] ?? 0);
+        $supervisorCount = (int) (($roleCounts['supervisor'] ?? 0) + ($roleCounts['cosupervisor'] ?? 0));
+        $adminCount = (int) (($roleCounts['admin'] ?? 0) + ($roleCounts['coordinator'] ?? 0));
+
+        return view('admin.users.index', compact(
+            'users',
+            'roles',
+            'perPage',
+            'roleFilter',
+            'search',
+            'filteredCount',
+            'totalUsers',
+            'studentCount',
+            'supervisorCount',
+            'adminCount'
+        ));
     }
 
     public function createUser()
@@ -160,13 +201,87 @@ class AdminController extends Controller
 
     public function theses()
     {
-        $theses = Thesis::with(['student.user', 'supervisor.user', 'proposals' => function($query) {
-            $query->latest()->limit(1);
-        }])->latest()->paginate(10);
-        
-        $supervisors = Supervisor::with('user')->get();
+        $perPage = (int) request('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-        return view('admin.theses.index', compact('theses', 'supervisors'));
+        $search = trim((string) request('q', ''));
+        $statusFilter = trim((string) request('status', ''));
+        $supervisorFilter = (int) request('supervisor_id', 0);
+
+        $statusOptions = [
+            'proposal_pending' => 'Proposal Pending',
+            'proposal_approved' => 'Proposal Approved',
+            'in_progress' => 'In Progress',
+            'ready_for_defense' => 'Ready for Defense',
+            'defended' => 'Defended',
+            'completed' => 'Completed',
+            'rejected' => 'Rejected',
+        ];
+
+        if ($statusFilter !== '' && !array_key_exists($statusFilter, $statusOptions)) {
+            $statusFilter = '';
+        }
+
+        $query = Thesis::with(['student.user', 'supervisor.user'])
+            ->withCount(['proposals', 'versions']);
+
+        if ($search !== '') {
+            $query->where(function ($thesisQuery) use ($search) {
+                $thesisQuery
+                    ->where('title', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('student.user', function ($studentUserQuery) use ($search) {
+                        $studentUserQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('student', function ($studentQuery) use ($search) {
+                        $studentQuery->where('student_id_number', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('supervisor.user', function ($supervisorUserQuery) use ($search) {
+                        $supervisorUserQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($statusFilter !== '') {
+            $query->where('status', $statusFilter);
+        }
+
+        if ($supervisorFilter > 0) {
+            $query->where('supervisor_id', $supervisorFilter);
+        }
+
+        $filteredCount = (clone $query)->count();
+
+        $theses = $query
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $supervisors = Supervisor::with('user')->orderBy('id')->get();
+
+        $totalTheses = Thesis::count();
+        $assignedTheses = Thesis::whereNotNull('supervisor_id')->count();
+        $readyDefenseTheses = Thesis::whereIn('status', ['ready_for_defense', 'defended', 'completed'])->count();
+        $completedTheses = Thesis::where('status', 'completed')->count();
+
+        return view('admin.theses.index', compact(
+            'theses',
+            'supervisors',
+            'perPage',
+            'search',
+            'statusFilter',
+            'supervisorFilter',
+            'statusOptions',
+            'filteredCount',
+            'totalTheses',
+            'assignedTheses',
+            'readyDefenseTheses',
+            'completedTheses'
+        ));
     }
 
     public function assignSupervisor(Request $request, Thesis $thesis)
@@ -188,12 +303,65 @@ class AdminController extends Controller
 
     public function groupsIndex()
     {
-        $groups = StudentGroup::with(['supervisor.user', 'department'])
-            ->withCount('students')
-            ->latest()
-            ->paginate(10);
+        $perPage = (int) request('per_page', 10);
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-        return view('admin.groups.index', compact('groups'));
+        $search = trim((string) request('q', ''));
+        $departmentFilter = (int) request('department_id', 0);
+
+        $query = StudentGroup::with(['supervisor.user', 'department'])
+            ->withCount(['students', 'theses']);
+
+        if ($search !== '') {
+            $query->where(function ($groupQuery) use ($search) {
+                $groupQuery
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('program', 'like', "%{$search}%")
+                    ->orWhere('academic_year', 'like', "%{$search}%")
+                    ->orWhere('notes', 'like', "%{$search}%")
+                    ->orWhereHas('department', function ($departmentQuery) use ($search) {
+                        $departmentQuery
+                            ->where('name', 'like', "%{$search}%")
+                            ->orWhere('code', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('supervisor.user', function ($supervisorQuery) use ($search) {
+                        $supervisorQuery->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($departmentFilter > 0) {
+            $query->where('department_id', $departmentFilter);
+        }
+
+        $filteredCount = (clone $query)->count();
+
+        $groups = $query
+            ->latest()
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $departments = Department::orderBy('name')->get(['id', 'name', 'code']);
+
+        $totalGroups = StudentGroup::count();
+        $groupsWithSupervisor = StudentGroup::whereNotNull('supervisor_id')->count();
+        $linkedStudents = Student::whereNotNull('student_group_id')->count();
+        $groupsWithThesis = StudentGroup::has('theses')->count();
+
+        return view('admin.groups.index', compact(
+            'groups',
+            'departments',
+            'perPage',
+            'search',
+            'departmentFilter',
+            'filteredCount',
+            'totalGroups',
+            'groupsWithSupervisor',
+            'linkedStudents',
+            'groupsWithThesis'
+        ));
     }
 
     public function groupsCreate()

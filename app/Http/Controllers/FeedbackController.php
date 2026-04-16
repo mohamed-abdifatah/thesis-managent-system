@@ -40,7 +40,7 @@ class FeedbackController extends Controller
 
         $this->notifyFeedback($thesis, $feedback);
 
-        return back()->with('success', 'Message sent.');
+        return back()->with('success', 'Message sent.')->with('open_chat', 'thesis-chat');
     }
 
     public function storeVersion(Request $request, ThesisVersion $version)
@@ -66,7 +66,48 @@ class FeedbackController extends Controller
 
         $this->notifyFeedback($thesis, $feedback, $version);
 
-        return back()->with('success', 'Feedback added.');
+        return back()->with('success', 'Feedback added.')->with('open_chat', 'thesis-chat');
+    }
+
+    public function update(Request $request, Feedback $feedback)
+    {
+        $request->validate([
+            'comment' => 'required|string|max:2000',
+            'topic' => 'nullable|string|max:120',
+        ]);
+
+        $thesis = $feedback->thesis()->with('defense.committeeMembers')->first();
+        if (! $thesis || ! $this->canMutateFeedback($thesis, $feedback)) {
+            abort(403);
+        }
+
+        $feedback->update([
+            'topic' => $request->filled('topic') ? $request->topic : null,
+            'comment' => $request->comment,
+        ]);
+
+        return back()->with('success', 'Message updated.')->with('open_chat', 'thesis-chat');
+    }
+
+    public function destroy(Feedback $feedback)
+    {
+        $thesis = $feedback->thesis()->with('defense.committeeMembers')->first();
+        if (! $thesis || ! $this->canMutateFeedback($thesis, $feedback)) {
+            abort(403);
+        }
+
+        $feedback->delete();
+
+        return back()->with('success', 'Message deleted.')->with('open_chat', 'thesis-chat');
+    }
+
+    private function canMutateFeedback(Thesis $thesis, Feedback $feedback): bool
+    {
+        if ((int) $feedback->user_id !== (int) auth()->id()) {
+            return false;
+        }
+
+        return $this->canAccess($thesis);
     }
 
     private function canAccess(Thesis $thesis): bool

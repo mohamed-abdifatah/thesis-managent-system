@@ -14,7 +14,143 @@
         if (is_string($mailFromAddress) && str_contains($mailFromAddress, '@')) {
             $defaultEmailDomain = substr(strrchr($mailFromAddress, '@'), 1);
         }
+
+        $selectedExistingCount = count($selectedExisting);
     @endphp
+
+    <style>
+        .gc-stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .gc-stat {
+            border: 1px solid var(--ta-border);
+            border-radius: 16px;
+            background: linear-gradient(165deg, #ffffff 0%, #f8fbff 100%);
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .gc-stat .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #1d4ed8;
+            background: #eaf1ff;
+            border: 1px solid #d2e1ff;
+        }
+
+        .gc-stat .label {
+            margin: 0;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #657892;
+            font-weight: 700;
+        }
+
+        .gc-stat .value {
+            margin: 2px 0 0;
+            font-size: 1.32rem;
+            line-height: 1.1;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #0f172a;
+        }
+
+        .gc-sidebar {
+            position: sticky;
+            top: 78px;
+            align-self: flex-start;
+        }
+
+        .gc-helper {
+            border-radius: 12px;
+            border: 1px solid #d8e5f7;
+            background: #f7fbff;
+            color: #4a5e77;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+
+        .gc-table tbody td {
+            vertical-align: middle;
+        }
+
+        .gc-table tbody tr:hover td {
+            background: #fbfdff;
+        }
+
+        .gc-search-wrap {
+            max-width: 280px;
+            width: 100%;
+        }
+
+        .gc-action-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        html.app-skin-dark .gc-stat {
+            background: linear-gradient(165deg, #151e2b 0%, #1b2636 100%);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+        }
+
+        html.app-skin-dark .gc-stat .icon {
+            color: #9fc1ff;
+            background: rgba(48, 88, 168, 0.35);
+            border-color: rgba(110, 154, 242, 0.45);
+        }
+
+        html.app-skin-dark .gc-stat .label,
+        html.app-skin-dark .gc-helper {
+            color: #a3b1c4;
+        }
+
+        html.app-skin-dark .gc-stat .value {
+            color: #e6edf7;
+        }
+
+        html.app-skin-dark .gc-helper {
+            background: #1a2534;
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+        html.app-skin-dark .gc-table tbody tr:hover td {
+            background: rgba(30, 44, 62, 0.8);
+        }
+
+        @media (max-width: 1399px) {
+            .gc-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .gc-sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .gc-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 
     <div class="ta-page-head">
         <div>
@@ -30,6 +166,37 @@
         </div>
     </div>
 
+    <section class="gc-stats" aria-label="Group create summary cards">
+        <article class="gc-stat">
+            <span class="icon"><i class="feather-grid"></i></span>
+            <div>
+                <p class="label">Departments</p>
+                <p class="value">{{ number_format($departments->count()) }}</p>
+            </div>
+        </article>
+        <article class="gc-stat">
+            <span class="icon"><i class="feather-user-check"></i></span>
+            <div>
+                <p class="label">Supervisors</p>
+                <p class="value">{{ number_format($supervisors->count()) }}</p>
+            </div>
+        </article>
+        <article class="gc-stat">
+            <span class="icon"><i class="feather-users"></i></span>
+            <div>
+                <p class="label">Existing Students</p>
+                <p class="value">{{ number_format($studentUsers->count()) }}</p>
+            </div>
+        </article>
+        <article class="gc-stat">
+            <span class="icon"><i class="feather-check-square"></i></span>
+            <div>
+                <p class="label">Selected Existing</p>
+                <p class="value">{{ number_format($selectedExistingCount) }}</p>
+            </div>
+        </article>
+    </section>
+
     <form method="POST" action="{{ route('admin.groups.store') }}" id="createGroupForm">
         @csrf
 
@@ -40,12 +207,16 @@
         @endif
 
         <div class="row g-4">
-            <div class="col-xl-4">
+            <div class="col-xl-4 gc-sidebar">
                 <div class="ta-panel mb-4">
                     <div class="ta-panel-head">
                         <h3>Group Setup</h3>
                     </div>
                     <div class="ta-panel-body">
+                        <div class="gc-helper">
+                            Choose department and supervisor first. Students added below will inherit these values.
+                        </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-semibold" for="group_name">Group Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('group_name') is-invalid @enderror" id="group_name" name="group_name" value="{{ old('group_name') }}" required>
@@ -139,6 +310,10 @@
                         <span class="text-muted small">Example: year4_0001 - year4_0100</span>
                     </div>
                     <div class="ta-panel-body">
+                        <div class="gc-helper">
+                            Generate usernames and emails in one click, then adjust any row manually before submit.
+                        </div>
+
                         <div class="row g-3 align-items-end">
                             <div class="col-md-3">
                                 <label class="form-label fw-semibold" for="rangePrefix">Prefix</label>
@@ -184,7 +359,7 @@
                     <div class="ta-panel-body">
                         <p class="text-muted small mb-3">You can mix generated users with manual rows. Leave both fields empty for unused rows.</p>
                         <div class="ta-table-shell">
-                            <table class="table table-hover align-middle mb-0" id="studentTable">
+                            <table class="table table-hover align-middle mb-0 gc-table" id="studentTable">
                                 <thead>
                                     <tr>
                                         <th style="width: 40%">User Detail</th>
@@ -229,7 +404,7 @@
                 <div class="ta-panel">
                     <div class="ta-panel-head">
                         <h3>Existing Student Users</h3>
-                        <div style="max-width: 260px; width: 100%;">
+                        <div class="gc-search-wrap">
                             <input type="text" id="existingStudentSearch" class="form-control form-control-sm" placeholder="Search name or email...">
                         </div>
                     </div>
@@ -239,7 +414,7 @@
                             <span>Select existing students to include them in this group without changing their current password.</span>
                         </div>
                         <div class="ta-table-shell">
-                            <table class="table table-hover align-middle mb-0" id="existingStudentTable">
+                            <table class="table table-hover align-middle mb-0 gc-table" id="existingStudentTable">
                                 <thead>
                                     <tr>
                                         <th style="width: 5%"></th>
@@ -277,7 +452,7 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-end gap-3 mt-4">
+                <div class="gc-action-row">
                     <a href="{{ route('admin.groups.index') }}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary">
                         <i class="feather-check-circle me-1"></i> Create Group

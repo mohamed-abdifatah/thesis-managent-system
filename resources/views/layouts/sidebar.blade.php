@@ -16,7 +16,7 @@
                     <i class="feather-book-open"></i>
                 </span>
                 <span class="ta-brand-text">
-                    <h4 class="logo logo-lg app-brand-title">Thesis Hub</h4>
+                    <h4 class="app-brand-title">Thesis Hub</h4>
                     <small>Management Console</small>
                 </span>
             </a>

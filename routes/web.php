@@ -61,6 +61,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/thesis/{thesis}/feedback', [FeedbackController::class, 'storeThesis'])
         ->middleware('role:student,supervisor,examiner')
         ->name('thesis.feedback.store');
+    Route::patch('/feedback/{feedback}', [FeedbackController::class, 'update'])
+        ->middleware('role:student,supervisor,examiner')
+        ->name('feedback.update');
+    Route::delete('/feedback/{feedback}', [FeedbackController::class, 'destroy'])
+        ->middleware('role:student,supervisor,examiner')
+        ->name('feedback.destroy');
     Route::get('/defense/schedule', [DefenseScheduleController::class, 'index'])->name('defense.schedule');
 
     // Admin Routes

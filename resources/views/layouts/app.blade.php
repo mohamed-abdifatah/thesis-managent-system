@@ -362,20 +362,24 @@
                 position: relative;
             }
 
-            .header-right .dropdown-menu.nxl-user-dropdown {
-                width: 300px;
-                max-width: min(300px, calc(100vw - 20px));
+            .header-right .dropdown.nxl-h-item .dropdown-menu.ta-head-dropdown {
+                top: calc(100% + 8px);
                 right: 0;
                 left: auto;
-                top: calc(100% + 8px);
+                margin: 0;
             }
 
-            .header-right .dropdown-menu.nxl-user-dropdown.show {
+            .header-right .dropdown.nxl-h-item .dropdown-menu.ta-head-dropdown.show {
                 top: calc(100% + 8px) !important;
                 right: 0 !important;
                 left: auto !important;
                 transform: none !important;
                 margin: 0 !important;
+            }
+
+            .header-right .dropdown-menu.nxl-user-dropdown {
+                width: 300px;
+                max-width: min(300px, calc(100vw - 20px));
             }
 
             .ta-search-wrap {
@@ -469,6 +473,20 @@
                 background: #f4f8ff;
                 color: #1d4ed8;
                 border-color: #b8cae7;
+            }
+
+            .ta-fullscreen-btn .minimize {
+                display: none;
+            }
+
+            html.fsh-infullscreen .ta-fullscreen-btn .maximize,
+            html.ta-is-fullscreen .ta-fullscreen-btn .maximize {
+                display: none;
+            }
+
+            html.fsh-infullscreen .ta-fullscreen-btn .minimize,
+            html.ta-is-fullscreen .ta-fullscreen-btn .minimize {
+                display: inline-block;
             }
 
             .ta-notification-dot {
@@ -1112,6 +1130,69 @@
                 backButton.addEventListener('click', () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
+            })();
+
+            (() => {
+                const root = document.documentElement;
+                const syncFullscreenClass = () => {
+                    const isNativeFullscreen = Boolean(
+                        document.fullscreenElement ||
+                        document.webkitFullscreenElement ||
+                        document.mozFullScreenElement ||
+                        document.msFullscreenElement
+                    );
+
+                    root.classList.toggle(
+                        'ta-is-fullscreen',
+                        isNativeFullscreen || root.classList.contains('fsh-infullscreen')
+                    );
+                };
+
+                if (typeof window.toggleFullScreen !== 'function') {
+                    window.toggleFullScreen = (element) => {
+                        const target = element || document.documentElement;
+
+                        if (window.FullScreenHelper && typeof window.FullScreenHelper.toggle === 'function') {
+                            window.FullScreenHelper.toggle(target);
+                            setTimeout(syncFullscreenClass, 0);
+                            return;
+                        }
+
+                        const inFullscreen = Boolean(
+                            document.fullscreenElement ||
+                            document.webkitFullscreenElement ||
+                            document.mozFullScreenElement ||
+                            document.msFullscreenElement
+                        );
+
+                        if (!inFullscreen) {
+                            const requestFullscreen =
+                                target.requestFullscreen ||
+                                target.webkitRequestFullscreen ||
+                                target.mozRequestFullScreen ||
+                                target.msRequestFullscreen;
+                            requestFullscreen && requestFullscreen.call(target);
+                            return;
+                        }
+
+                        const exitFullscreen =
+                            document.exitFullscreen ||
+                            document.webkitExitFullscreen ||
+                            document.mozCancelFullScreen ||
+                            document.msExitFullscreen;
+                        exitFullscreen && exitFullscreen.call(document);
+                    };
+                }
+
+                ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach((eventName) => {
+                    document.addEventListener(eventName, syncFullscreenClass);
+                });
+
+                if (window.FullScreenHelper && typeof window.FullScreenHelper.on === 'function') {
+                    window.FullScreenHelper.on(syncFullscreenClass);
+                }
+
+                syncFullscreenClass();
             })();
         </script>
         
