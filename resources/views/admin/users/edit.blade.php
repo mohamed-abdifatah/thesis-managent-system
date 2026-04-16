@@ -273,6 +273,9 @@
         }
     </style>
 
+    @include('partials.admin-account-refresh')
+
+    <div class="adm-refresh">
     <div class="ta-page-head uf-shell">
         <div>
             <span class="ta-page-kicker">Administration</span>
@@ -479,5 +482,6 @@
 
         document.addEventListener('DOMContentLoaded', toggleSupervisorField);
     </script>
+        </div>
 </x-app-layout>
 

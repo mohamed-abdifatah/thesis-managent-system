@@ -286,6 +286,9 @@
         }
     </style>
 
+    @include('partials.student-account-refresh')
+
+    <div class="{{ $isStudent ? 'stu-refresh' : '' }}">
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Student Workspace</span>
@@ -532,4 +535,5 @@
             applyFilters();
         });
     </script>
+    </div>
 </x-app-layout>

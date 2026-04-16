@@ -95,7 +95,7 @@
     <div class="auth-form">
         <div class="auth-form-head">
             <h2 class="auth-form-title">Sign in to your workspace</h2>
-            <p class="auth-form-subtitle">Access your dashboard to continue proposal reviews, thesis updates, and defense progress tracking.</p>
+            <p class="auth-form-subtitle">Sign in to continue.</p>
         </div>
 
         <form method="POST" action="{{ route('login') }}">

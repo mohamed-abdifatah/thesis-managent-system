@@ -303,6 +303,9 @@
         }
     </style>
 
+    @include('partials.student-account-refresh')
+
+    <div class="stu-refresh">
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Student Workspace</span>
@@ -522,5 +525,6 @@
                 </div>
             </div>
         </div>
+    </div>
     </div>
 </x-app-layout>

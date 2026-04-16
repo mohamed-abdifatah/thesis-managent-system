@@ -1,4 +1,7 @@
 <x-app-layout>
+    @include('partials.admin-account-refresh')
+
+    <div class="adm-refresh">
     <div class="page-header d-flex align-items-center justify-content-between mb-4">
         <div>
             <h2 class="page-header-title h3 mb-0">Edit Defense Session</h2>
@@ -191,4 +194,5 @@
             updateIndexes();
         });
     </script>
+    </div>
 </x-app-layout>

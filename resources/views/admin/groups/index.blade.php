@@ -216,6 +216,10 @@
         }
     </style>
 
+    @include('partials.admin-account-refresh')
+
+    <div class="adm-refresh">
+
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Administration</span>
@@ -397,5 +401,6 @@
             Showing {{ $groups->firstItem() ?? 0 }} - {{ $groups->lastItem() ?? 0 }} of {{ $groups->total() }} records
         </span>
         {{ $groups->links() }}
+    </div>
     </div>
 </x-app-layout>

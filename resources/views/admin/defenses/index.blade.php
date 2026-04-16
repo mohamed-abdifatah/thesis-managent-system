@@ -397,6 +397,10 @@
         }
     </style>
 
+    @include('partials.admin-account-refresh')
+
+    <div class="adm-refresh">
+
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Administration</span>
@@ -624,4 +628,5 @@
         </span>
         {{ $sessions->links() }}
     </div>
+        </div>
 </x-app-layout>

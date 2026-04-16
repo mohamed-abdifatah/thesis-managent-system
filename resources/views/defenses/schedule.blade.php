@@ -217,6 +217,9 @@
         }
     </style>
 
+    @include('partials.student-account-refresh')
+
+    <div class="{{ auth()->user()->hasRole('student') ? 'stu-refresh' : '' }}">
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Academic Workflow</span>
@@ -330,5 +333,6 @@
                 </tbody>
             </table>
         </div>
+    </div>
     </div>
 </x-app-layout>

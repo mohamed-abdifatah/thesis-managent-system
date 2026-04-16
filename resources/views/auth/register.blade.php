@@ -93,7 +93,7 @@
     <div class="auth-form">
         <div class="auth-form-head">
             <h2 class="auth-form-title">Create your account</h2>
-            <p class="auth-form-subtitle">Set up your identity to access role-specific thesis workflows and collaboration tools.</p>
+            <p class="auth-form-subtitle">Create your account to get started.</p>
         </div>
 
         <form method="POST" action="{{ route('register') }}">

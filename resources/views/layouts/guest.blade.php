@@ -265,6 +265,23 @@
                 flex-direction: column;
                 justify-content: space-between;
                 min-height: 100%;
+                background:
+                    var(--auth-overlay-light, linear-gradient(150deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.83) 56%, rgba(255, 255, 255, 0.92) 100%)),
+                    var(--auth-info-bg, none),
+                    var(--card);
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+            }
+
+            html.app-skin-dark body .auth-info {
+                background:
+                    var(--auth-overlay-dark, linear-gradient(150deg, rgba(17, 27, 40, 0.82) 0%, rgba(17, 27, 40, 0.72) 56%, rgba(17, 27, 40, 0.86) 100%)),
+                    var(--auth-info-bg, none),
+                    var(--card);
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
             }
 
             .auth-info::before {
@@ -540,25 +557,30 @@
             $isVerifyRoute = request()->routeIs('verification.notice');
             $isConfirmRoute = request()->routeIs('password.confirm');
 
-            $authKicker = 'Secure Academic Access';
-            $authTitle = 'Continue your thesis journey with confidence.';
-            $authCopy = 'Your workspace keeps proposals, feedback loops, and defense milestones connected so every role can move forward with clarity.';
+            $authKicker = 'Thesis Portal';
+            $authTitle = 'Secure access to your workspace.';
+            $authCopy = 'Continue your thesis work with a clean, focused flow.';
 
             if ($isLoginRoute) {
-                $authTitle = 'Welcome back. Let us pick up where your research left off.';
-                $authCopy = 'Sign in to manage proposals, thesis versions, and defense workflows in one place.';
+                $authTitle = 'Welcome back.';
+                $authCopy = 'Sign in to continue.';
             } elseif ($isRegisterRoute) {
-                $authTitle = 'Create your account and start managing thesis work in one flow.';
-                $authCopy = 'Register once to access a role-aware dashboard built for students, supervisors, committee members, and librarians.';
+                $authTitle = 'Create your account.';
+                $authCopy = 'Start your thesis workflow in minutes.';
             } elseif ($isForgotPasswordRoute || $isResetPasswordRoute) {
-                $authTitle = 'Recover access without losing momentum.';
-                $authCopy = 'Use the secure reset flow to regain entry and continue your thesis timeline.';
+                $authTitle = 'Recover your access.';
+                $authCopy = 'Reset your password and continue.';
             } elseif ($isVerifyRoute) {
-                $authTitle = 'Verify your email to activate collaboration features.';
-                $authCopy = 'Email verification keeps thesis communication trusted and trackable across all academic roles.';
+                $authTitle = 'Verify your email.';
+                $authCopy = 'Complete verification to continue.';
             } elseif ($isConfirmRoute) {
-                $authTitle = 'Confirm your identity to proceed securely.';
-                $authCopy = 'This checkpoint protects critical actions and keeps your academic data safe.';
+                $authTitle = 'Confirm your identity.';
+                $authCopy = 'Security check before continuing.';
+            }
+
+            $authInfoBackground = null;
+            if ($isLoginRoute || $isRegisterRoute) {
+                $authInfoBackground = asset('assets/images/background.png');
             }
         @endphp
 
@@ -566,7 +588,13 @@
             @include('partials.public-header')
 
             <main class="auth-stage" id="guest-main-content">
-                <section class="auth-info" aria-label="Authentication context">
+                <section
+                    class="auth-info"
+                    aria-label="Authentication context"
+                    @if($authInfoBackground)
+                        style="--auth-info-bg: url('{{ $authInfoBackground }}'); --auth-overlay-light: linear-gradient(150deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.46) 56%, rgba(255, 255, 255, 0.62) 100%); --auth-overlay-dark: linear-gradient(150deg, rgba(17, 27, 40, 0.62) 0%, rgba(17, 27, 40, 0.5) 56%, rgba(17, 27, 40, 0.68) 100%);"
+                    @endif
+                >
                     <div>
                         <span class="auth-kicker">{{ $authKicker }}</span>
                         <h1 class="auth-title">{{ $authTitle }}</h1>
@@ -576,15 +604,15 @@
                     <div class="auth-points" aria-hidden="true">
                         <div class="auth-point">
                             <strong>Unified Workflow</strong>
-                            <span>From proposal to public catalog with one connected timeline.</span>
+                            <span>Proposal to defense in one place.</span>
                         </div>
                         <div class="auth-point">
                             <strong>Role-Aware Access</strong>
-                            <span>Students, supervisors, committees, and admins use focused tools.</span>
+                            <span>Student, Supervisor, Examiner, Admin.</span>
                         </div>
                         <div class="auth-point">
                             <strong>Clear Milestones</strong>
-                            <span>Status updates and decisions remain transparent from start to defense.</span>
+                            <span>Simple, visible progress tracking.</span>
                         </div>
                     </div>
                 </section>

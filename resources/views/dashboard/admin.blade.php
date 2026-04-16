@@ -493,7 +493,10 @@
         }
     </style>
 
-    <div class="ta-admin">
+    @include('partials.admin-account-refresh')
+
+    <div class="adm-refresh">
+        <div class="ta-admin">
         <div class="ta-page-head">
             <div>
                 <span class="ta-page-kicker">Admin Workspace</span>
@@ -720,6 +723,7 @@
                     </div>
                 </section>
             </aside>
+        </div>
         </div>
     </div>
 </x-app-layout>
