@@ -10,8 +10,7 @@
                 const storageKey = 'app-skin-dark';
                 try {
                     const stored = localStorage.getItem(storageKey);
-                    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                    const isDark = stored ? stored === 'app-skin-dark' : prefersDark;
+                    const isDark = stored ? stored === 'app-skin-dark' : true;
                     document.documentElement.classList.toggle('app-skin-dark', isDark);
                 } catch (_) {
                     // Ignore localStorage access failures
@@ -572,10 +571,9 @@
                 } catch (_) {
                     savedTheme = null;
                 }
-                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 const initialTheme = savedTheme
                     ? (savedTheme === 'app-skin-dark' ? 'dark' : 'light')
-                    : (prefersDark ? 'dark' : 'light');
+                    : 'dark';
 
                 applyTheme(initialTheme);
 
