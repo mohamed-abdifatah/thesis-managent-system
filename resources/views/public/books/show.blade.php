@@ -39,6 +39,10 @@
                 --sea: #2f8f9d;
                 --line: rgba(15, 23, 42, 0.1);
                 --shadow: 0 18px 45px rgba(18, 20, 23, 0.12);
+                --accent-strong: var(--accent-dark);
+                --teal: var(--sea);
+                --card: var(--surface);
+                --header-glass: rgba(255, 255, 255, 0.72);
             }
 
             html.app-skin-dark body {
@@ -52,6 +56,10 @@
                 --sea: #6ad0dd;
                 --line: rgba(255, 255, 255, 0.12);
                 --shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+                --accent-strong: var(--accent-dark);
+                --teal: var(--sea);
+                --card: var(--surface);
+                --header-glass: rgba(16, 24, 37, 0.72);
             }
 
             * {
@@ -119,92 +127,180 @@
                 z-index: 1;
             }
 
-            .book-header {
+            .site-header {
+                position: sticky;
+                top: 14px;
+                z-index: 30;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 16px;
-                flex-wrap: wrap;
-                margin-bottom: 22px;
+                gap: 14px;
+                border: 1px solid var(--line);
+                background: var(--header-glass);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 18px;
+                padding: 10px 12px;
+                margin-bottom: 20px;
             }
 
-            .logo {
-                display: flex;
+            .brand {
+                display: inline-flex;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
+                text-decoration: none;
+                color: var(--ink);
                 font-weight: 700;
-                letter-spacing: 0.02em;
+                min-width: 0;
             }
 
-            .logo-mark {
-                width: 44px;
-                height: 44px;
+            .brand-mark {
+                width: 42px;
+                height: 42px;
                 border-radius: 14px;
-                background: linear-gradient(135deg, var(--accent), #ffba5a);
-                display: grid;
-                place-items: center;
-                color: white;
-                font-family: "Fraunces", serif;
-                font-size: 20px;
-                box-shadow: 0 10px 30px rgba(228, 87, 46, 0.35);
-            }
-
-            .book-header nav {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                flex-wrap: wrap;
-            }
-
-            .hero-btn {
+                overflow: hidden;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 10px 18px;
-                border-radius: 999px;
-                border: 1px solid transparent;
-                text-decoration: none;
-                font-weight: 600;
-                transition: all 0.2s ease;
-                background: transparent;
-                cursor: pointer;
-                font-size: 0.92rem;
+                background: #ffffff;
+                border: 1px solid var(--line);
+                box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
             }
 
-            .hero-btn-ghost {
-                border-color: var(--line);
-                color: var(--ink);
-                background: rgba(255, 255, 255, 0.6);
+            .brand-mark img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
             }
 
-            html.app-skin-dark body .hero-btn-ghost {
-                background: rgba(18, 22, 28, 0.75);
+            .brand-copy {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.12;
             }
 
-            .hero-btn-ghost:hover {
-                border-color: rgba(255, 255, 255, 0.42);
-                transform: translateY(-1px);
+            .brand-copy strong {
+                font-size: 0.95rem;
+                letter-spacing: -0.02em;
             }
 
-            .hero-btn-primary {
-                background: var(--accent);
-                color: #fff;
-                box-shadow: 0 14px 30px rgba(228, 87, 46, 0.35);
+            .brand-copy span {
+                font-size: 0.69rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                margin-top: 3px;
             }
 
-            .hero-btn-primary:hover {
-                background: var(--accent-dark);
-                color: #fff;
-                transform: translateY(-1px);
-            }
-
-            .book-toolbar {
+            .site-nav {
                 display: flex;
                 align-items: center;
-                justify-content: space-between;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .nav-btn {
+                border: 1px solid transparent;
+                border-radius: 999px;
+                min-height: 40px;
+                padding: 9px 16px;
+                font-size: 0.82rem;
+                font-weight: 700;
+                text-decoration: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .nav-btn.ghost {
+                color: var(--ink);
+                background: rgba(255, 255, 255, 0.6);
+                border-color: var(--line);
+            }
+
+            html.app-skin-dark body .nav-btn.ghost {
+                background: rgba(17, 27, 40, 0.72);
+            }
+
+            .nav-btn.ghost:hover {
+                transform: translateY(-1px);
+                border-color: rgba(159, 178, 206, 0.5);
+            }
+
+            .nav-btn.primary {
+                color: #ffffff;
+                background: linear-gradient(145deg, var(--accent), var(--accent-strong));
+                box-shadow: 0 14px 26px rgba(217, 79, 32, 0.3);
+            }
+
+            .nav-btn.primary:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 18px 30px rgba(217, 79, 32, 0.35);
+            }
+
+            .hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+                gap: 16px;
+                margin-bottom: 14px;
+            }
+
+            .hero-main,
+            .hero-side,
+            .book-panel {
+                border: 1px solid var(--line);
+                border-radius: 22px;
+                background: var(--card);
+                box-shadow: var(--shadow);
+                padding: 22px;
+            }
+
+            .hero-main {
+                position: relative;
+                overflow: hidden;
+            }
+
+            .hero-main::before {
+                content: '';
+                position: absolute;
+                width: 260px;
+                height: 260px;
+                border-radius: 999px;
+                right: -120px;
+                top: -120px;
+                background: radial-gradient(circle, rgba(47, 143, 157, 0.22) 0%, transparent 72%);
+                pointer-events: none;
+            }
+
+            .hero-kicker {
+                color: var(--teal);
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                font-size: 0.7rem;
+                font-weight: 700;
+            }
+
+            .hero-title {
+                margin: 10px 0 0;
+                font-family: "Fraunces", serif;
+                font-size: clamp(1.75rem, 3.8vw, 2.65rem);
+                letter-spacing: -0.02em;
+                line-height: 1.12;
+            }
+
+            .hero-text {
+                margin-top: 12px;
+                color: var(--muted);
+                line-height: 1.7;
+            }
+
+            .hero-actions {
+                margin-top: 16px;
+                display: flex;
+                align-items: center;
                 gap: 10px;
                 flex-wrap: wrap;
-                margin-bottom: 14px;
             }
 
             .book-status {
@@ -222,48 +318,16 @@
                 border: 1px solid rgba(106, 208, 221, 0.28);
             }
 
-            .book-layout {
-                display: grid;
-                grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
-                gap: 16px;
-            }
-
-            .book-panel {
-                background: var(--surface);
-                border: 1px solid var(--line);
-                border-radius: 22px;
-                padding: 22px;
-                box-shadow: var(--shadow);
-            }
-
-            .book-kicker {
-                color: var(--sea);
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                font-size: 0.7rem;
-                font-weight: 700;
-            }
-
-            .book-title {
-                margin: 10px 0 0;
-                font-family: "Fraunces", serif;
-                font-size: clamp(1.5rem, 3vw, 2.2rem);
+            .hero-side h2 {
+                margin: 0;
+                font-size: 1.1rem;
                 letter-spacing: -0.02em;
-                line-height: 1.1;
             }
 
-            .book-sub {
-                margin-top: 12px;
+            .hero-side p {
+                margin: 6px 0 14px;
                 color: var(--muted);
-                line-height: 1.7;
-            }
-
-            .book-download {
-                margin-top: 10px;
-            }
-
-            .book-download .hero-btn {
-                min-height: 44px;
+                font-size: 0.88rem;
             }
 
             .meta-list {
@@ -353,13 +417,8 @@
             }
 
             @media (max-width: 900px) {
-                .book-layout {
+                .hero {
                     grid-template-columns: 1fr;
-                }
-
-                .book-header {
-                    flex-direction: column;
-                    align-items: flex-start;
                 }
             }
 
@@ -368,25 +427,14 @@
                     padding: 22px 12px 30px;
                 }
 
+                .hero-main,
+                .hero-side,
                 .book-panel {
                     padding: 16px;
                     border-radius: 18px;
                 }
 
-                .book-header nav {
-                    width: 100%;
-                }
-
-                .book-header nav .hero-btn {
-                    flex: 1 1 auto;
-                }
-
-                .book-toolbar {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-
-                .book-toolbar .hero-btn {
+                .hero-actions .nav-btn {
                     width: 100%;
                 }
             }
@@ -404,57 +452,35 @@
         @endphp
 
         <div class="book-shell" id="book-main-content">
-            <header class="book-header">
-                <div class="logo">
-                    <div class="logo-mark">T</div>
-                    <span>{{ config('app.name', 'Thesis Management System') }}</span>
-                </div>
-                <nav>
-                    <button class="hero-btn hero-btn-ghost" id="themeToggle" type="button" aria-pressed="true">
-                        Light theme
-                    </button>
-                    <a href="{{ route('books.index') }}" class="hero-btn hero-btn-ghost">Browse thesis books</a>
-                    @if (Route::has('login'))
-                        @auth
-                            <a class="hero-btn hero-btn-primary" href="{{ url('/dashboard') }}">Go to dashboard</a>
-                        @else
-                            <a class="hero-btn hero-btn-ghost" href="{{ route('login') }}">Log in</a>
-                            @if (Route::has('register'))
-                                <a class="hero-btn hero-btn-primary" href="{{ route('register') }}">Create account</a>
-                            @endif
-                        @endauth
-                    @endif
-                </nav>
-            </header>
+            @include('partials.public-header')
 
-            <div class="book-toolbar">
-                <a href="{{ route('books.index') }}" class="hero-btn hero-btn-ghost">Back to catalog</a>
-                <span class="book-status">
-                    <i class="feather-check-circle"></i>
-                    Published Thesis
-                </span>
-            </div>
-
-            <div class="book-layout">
-                <section class="book-panel">
-                    <span class="book-kicker">Public Thesis Book</span>
-                    <h1 class="book-title">{{ $thesis->title }}</h1>
-                    <p class="book-sub">
+            <section class="hero" aria-label="Book title and metadata">
+                <article class="hero-main">
+                    <span class="hero-kicker">Public Thesis Book</span>
+                    <h1 class="hero-title">{{ $thesis->title }}</h1>
+                    <p class="hero-text">
                         {{ $latestProposal?->abstract ?: 'No abstract was provided for this thesis.' }}
                     </p>
 
-                    @if($publicFinalVersion)
-                        <div class="book-download">
-                            <a href="{{ route('books.download', $thesis) }}" class="hero-btn hero-btn-primary">
-                                <i class="feather-download me-1"></i>
-                                Download Final Thesis (v{{ $publicFinalVersion->version_number }})
-                            </a>
-                        </div>
-                    @endif
-                </section>
+                    <div class="hero-actions">
+                        <a href="{{ route('books.index') }}" class="nav-btn ghost">Back to catalog</a>
+                        <span class="book-status">
+                            <i class="feather-check-circle"></i>
+                            Published Thesis
+                        </span>
 
-                <aside class="book-panel">
-                    <h2 class="h5 fw-bold mb-3">Book Metadata</h2>
+                        @if($publicFinalVersion)
+                            <a href="{{ route('books.download', $thesis) }}" class="nav-btn primary">
+                                <i class="feather-download me-1"></i>
+                                Download Final Thesis ({{ $publicFinalVersion->unit_label }})
+                            </a>
+                        @endif
+                    </div>
+                </article>
+
+                <aside class="hero-side">
+                    <h2>Book Metadata</h2>
+                    <p>Verified publication details from the public thesis catalog.</p>
                     <div class="meta-list">
                         <div class="meta-item">
                             <span>Owner</span>
@@ -477,8 +503,8 @@
                             <strong>{{ $thesis->publisher->name ?? 'N/A' }}</strong>
                         </div>
                         <div class="meta-item">
-                            <span>Final Thesis Version</span>
-                            <strong>v{{ $publicFinalVersion->version_number ?? 'N/A' }}</strong>
+                            <span>Final Thesis Unit</span>
+                            <strong>{{ $publicFinalVersion?->unit_label ?? 'Unit N/A' }}</strong>
                         </div>
                         <div class="meta-item">
                             <span>Total Downloads</span>
@@ -486,7 +512,7 @@
                         </div>
                     </div>
                 </aside>
-            </div>
+            </section>
 
             <section class="book-panel mt-3">
                 <h2 class="h5 fw-bold mb-3">Catalog Activity</h2>
@@ -517,6 +543,7 @@
             (() => {
                 const root = document.documentElement;
                 const toggleButton = document.getElementById('themeToggle');
+                const buttonLabel = toggleButton ? toggleButton.querySelector('[data-theme-label]') : null;
                 const storageKey = 'app-skin-dark';
 
                 const applyTheme = (theme) => {
@@ -524,7 +551,11 @@
                     root.classList.toggle('app-skin-dark', dark);
 
                     if (toggleButton) {
-                        toggleButton.textContent = dark ? 'Light theme' : 'Dark theme';
+                        if (buttonLabel) {
+                            buttonLabel.textContent = dark ? 'Light theme' : 'Dark theme';
+                        } else {
+                            toggleButton.textContent = dark ? 'Light theme' : 'Dark theme';
+                        }
                         toggleButton.setAttribute('aria-pressed', dark ? 'true' : 'false');
                     }
 

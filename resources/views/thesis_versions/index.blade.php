@@ -421,8 +421,8 @@
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Student Workspace</span>
-            <h1 class="ta-page-title">Thesis Versions</h1>
-            <p class="ta-page-subtitle">Upload unit versions, monitor review status, and coordinate feedback with your supervisor and committee.</p>
+            <h1 class="ta-page-title">Thesis Units</h1>
+            <p class="ta-page-subtitle">Upload thesis units, monitor review status, and coordinate feedback with your supervisor and committee.</p>
         </div>
         <div class="ta-page-actions">
             <a href="{{ route('proposals.index') }}" class="ta-chip-link">
@@ -537,7 +537,7 @@
 
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="feather-upload-cloud me-2"></i>
-                            Upload Version
+                            Upload Unit
                         </button>
                     </form>
                 </div>
@@ -550,8 +550,8 @@
                 <div class="ta-panel-body">
                     <div class="tv-kpi-list">
                         <div class="tv-kpi">
-                            <span>Latest Version</span>
-                            <strong>{{ $latestVersion ? '#'.$latestVersion->version_number : 'Not Uploaded' }}</strong>
+                            <span>Latest Unit</span>
+                            <strong>{{ $latestVersion ? $latestVersion->unit_label : 'Not Uploaded' }}</strong>
                         </div>
                         <div class="tv-kpi">
                             <span>Latest Status</span>
@@ -577,7 +577,7 @@
         <div class="ta-panel">
             <div class="ta-panel-head">
                 <div>
-                    <h3>Version History</h3>
+                    <h3>Unit History</h3>
                     <span class="text-muted small">{{ $versions->count() }} uploaded entries</span>
                 </div>
                 <span class="tv-chip"><i class="feather-layers"></i> {{ $units->count() }} unit(s)</span>
@@ -601,7 +601,7 @@
                             <tr>
                                 <td>
                                     <p class="tv-row-title">{{ $version->unit?->name ?? 'General Unit' }}</p>
-                                    <span class="tv-sub">Version #{{ $version->version_number }}</span>
+                                    <span class="tv-sub">{{ $version->unit_label }}</span>
                                 </td>
                                 <td>
                                     <span class="tv-chip">{{ $version->unit_number ?? '-' }}</span>
@@ -818,7 +818,7 @@
                         return;
                     }
 
-                    const name = window.prompt('Enter new unit name (e.g. Chapter):');
+                    const name = window.prompt('Enter new unit name (e.g. Introduction):');
                     if (!name || !name.trim()) {
                         select.value = '';
                         return;

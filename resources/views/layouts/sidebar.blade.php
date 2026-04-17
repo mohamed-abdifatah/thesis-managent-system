@@ -45,7 +45,7 @@
                                 <a class="nxl-link {{ request()->routeIs('proposals.*') ? 'is-active' : '' }}" href="{{ route('proposals.index') }}">My Proposal</a>
                             </li>
                             <li class="nxl-item">
-                                <a class="nxl-link {{ request()->routeIs('thesis.versions.*') ? 'is-active' : '' }}" href="{{ route('thesis.versions.index') }}">Thesis Versions</a>
+                                <a class="nxl-link {{ request()->routeIs('thesis.versions.*') ? 'is-active' : '' }}" href="{{ route('thesis.versions.index') }}">Thesis Units</a>
                             </li>
                             <li class="nxl-item">
                                 <a class="nxl-link {{ request()->routeIs('defense.schedule') ? 'is-active' : '' }}" href="{{ route('defense.schedule') }}">Defense Schedule</a>

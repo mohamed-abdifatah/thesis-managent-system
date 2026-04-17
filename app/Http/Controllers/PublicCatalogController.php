@@ -14,7 +14,7 @@ class PublicCatalogController extends Controller
         $sort = trim((string) request('sort', 'newest'));
 
         $booksQuery = Thesis::query()
-            ->with(['student.user', 'group.students.user', 'supervisor.user', 'finalThesisVersion'])
+            ->with(['student.user', 'group.students.user', 'supervisor.user', 'finalThesisVersion', 'finalThesisVersion.unit'])
             ->where('status', 'completed')
             ->where('is_library_approved', true)
             ->where('is_public', true)
@@ -54,6 +54,7 @@ class PublicCatalogController extends Controller
             'group.students.user',
             'supervisor.user',
             'finalThesisVersion',
+            'finalThesisVersion.unit',
             'publisher',
             'proposals',
             'catalogEvents.user',
@@ -87,7 +88,7 @@ class PublicCatalogController extends Controller
         $thesis->increment('public_downloads');
 
         $extension = pathinfo($version->file_path, PATHINFO_EXTENSION) ?: 'pdf';
-        $filename = Str::slug($thesis->title) . '-v' . $version->version_number . '-final.' . $extension;
+        $filename = Str::slug($thesis->title) . '-unit-' . $version->unit_sequence . '-final.' . $extension;
 
         return Storage::disk('public')->download($version->file_path, $filename);
     }

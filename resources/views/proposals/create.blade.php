@@ -260,7 +260,7 @@
                     </div>
                     <div class="ta-panel-body">
                         <p class="small text-muted mb-2">Your supervisor reviews this proposal and may approve, reject, or request revisions.</p>
-                        <p class="small text-muted mb-0">After approval, you can begin uploading thesis unit versions from the Thesis Versions page.</p>
+                        <p class="small text-muted mb-0">After approval, you can begin uploading thesis units from the Thesis Units page.</p>
                     </div>
                 </div>
             </div>

@@ -15,8 +15,10 @@ class ExaminerThesisController extends Controller
             'supervisor.user',
             'versions.feedbacks.user',
             'versions.reviewer',
+            'versions.unit',
             'feedbacks.user',
             'feedbacks.thesisVersion',
+            'feedbacks.thesisVersion.unit',
             'defense.committeeMembers',
         ]);
 

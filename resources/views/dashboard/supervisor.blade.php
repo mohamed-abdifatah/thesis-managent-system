@@ -480,28 +480,26 @@
         }
     </style>
 
-    <div class="svd-page">
-        <section class="svd-hero">
-            <div class="svd-hero-content">
-                <div>
-                    <p class="svd-kicker">Supervisor Workspace</p>
-                    <h1 class="svd-title">Supervision Command Center</h1>
-                    <p class="svd-subtitle">
-                        Track every assigned group, keep proposal reviews flowing, and proactively monitor readiness for defense.
-                    </p>
-                </div>
-                <div class="svd-actions">
-                    <a href="{{ route('supervisor.students.index') }}" class="svd-action">
-                        <i class="feather-users"></i>
-                        Open My Students
-                    </a>
-                    <a href="{{ route('defense.schedule') }}" class="svd-action">
-                        <i class="feather-calendar"></i>
-                        Defense Calendar
-                    </a>
-                </div>
+    @include('partials.supervisor-account-refresh')
+
+    <div class="sup-refresh svd-page">
+        <div class="ta-page-head">
+            <div>
+                <span class="ta-page-kicker">Supervisor Workspace</span>
+                <h1 class="ta-page-title">Supervision Command Center</h1>
+                <p class="ta-page-subtitle">Track every assigned group, keep proposal reviews flowing, and proactively monitor readiness for defense.</p>
             </div>
-        </section>
+            <div class="ta-page-actions">
+                <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link">
+                    <i class="feather-users"></i>
+                    Open My Students
+                </a>
+                <a href="{{ route('defense.schedule') }}" class="ta-chip-link">
+                    <i class="feather-calendar"></i>
+                    Defense Calendar
+                </a>
+            </div>
+        </div>
 
         <div class="row g-3 mb-4">
             <div class="col-sm-6 col-xl-3">
@@ -548,8 +546,8 @@
 
         <div class="row g-4">
             <div class="col-12 col-xxl-8">
-                <section class="svd-panel">
-                    <div class="svd-panel-head">
+                <section class="svd-panel ta-panel">
+                    <div class="svd-panel-head ta-panel-head">
                         <h3 class="svd-panel-title">Group Thesis Queue</h3>
                         <a href="{{ route('supervisor.students.index') }}" class="svd-link">View full supervision list</a>
                     </div>
@@ -629,8 +627,8 @@
             </div>
 
             <div class="col-12 col-xxl-4">
-                <section class="svd-panel mb-4">
-                    <div class="svd-panel-head">
+                <section class="svd-panel ta-panel mb-4">
+                    <div class="svd-panel-head ta-panel-head">
                         <h3 class="svd-panel-title">Review Load Snapshot</h3>
                     </div>
                     <div class="p-3">
@@ -660,8 +658,8 @@
                     </div>
                 </section>
 
-                <section class="svd-panel">
-                    <div class="svd-panel-head">
+                <section class="svd-panel ta-panel">
+                    <div class="svd-panel-head ta-panel-head">
                         <h3 class="svd-panel-title">Quick Actions</h3>
                     </div>
                     <div class="p-3">

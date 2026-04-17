@@ -892,12 +892,12 @@
                             <input id="wa-topic-{{ $chatKey }}" type="text" name="topic" class="form-control" placeholder="Optional title" value="{{ old('topic') }}">
                         </div>
                         <div class="col-12 col-md-8">
-                            <label class="wa-compose-label" for="wa-version-{{ $chatKey }}">Link to Version</label>
+                            <label class="wa-compose-label" for="wa-version-{{ $chatKey }}">Link to Unit</label>
                             <select id="wa-version-{{ $chatKey }}" name="thesis_version_id" class="form-select">
                                 <option value="">General</option>
                                 @foreach($thesis->versions->sortBy('version_number') as $version)
                                     <option value="{{ $version->id }}" @selected((string) old('thesis_version_id') === (string) $version->id)>
-                                        {{ $version->unit?->name ?? 'Unit' }} {{ $version->unit_number ?? '' }}
+                                        {{ $version->unit_label }}
                                     </option>
                                 @endforeach
                             </select>

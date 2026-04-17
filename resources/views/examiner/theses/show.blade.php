@@ -275,7 +275,7 @@
                 <div>
                     <p class="exv-kicker">Examiner Thesis Review</p>
                     <h1 class="exv-title">{{ $thesis->title }}</h1>
-                    <p class="exv-subtitle">Inspect thesis versions, update review status, and collaborate through feedback chat.</p>
+                    <p class="exv-subtitle">Inspect thesis units, update review status, and collaborate through feedback chat.</p>
                 </div>
                 <div class="exv-actions">
                     <a href="{{ route('examiner.defenses.index') }}" class="exv-action">
@@ -302,7 +302,7 @@
             <div class="col-sm-6 col-xl-3">
                 <article class="exv-stat">
                     <div>
-                        <p class="exv-stat-label">Total Versions</p>
+                        <p class="exv-stat-label">Total Units</p>
                         <h3 class="exv-stat-value">{{ $totalVersions }}</h3>
                     </div>
                     <span class="exv-stat-icon"><i class="feather-layers"></i></span>
@@ -332,7 +332,7 @@
             <div class="col-12 col-xxl-8">
                 <section class="exv-panel">
                     <div class="exv-panel-head">
-                        <h3 class="exv-panel-title">Thesis Versions</h3>
+                        <h3 class="exv-panel-title">Thesis Units</h3>
                         <span class="small text-muted">Newest first</span>
                     </div>
 
@@ -341,7 +341,7 @@
                             <article class="exv-version">
                                 <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
                                     <div>
-                                        <h4 class="exv-version-name">Version v{{ $version->version_number }}</h4>
+                                        <h4 class="exv-version-name">{{ $version->unit_label }}</h4>
                                         <p class="exv-sub">Uploaded {{ $version->created_at->format('M d, Y') }} | Feedback items: {{ $version->feedbacks->count() }}</p>
                                         @if($version->reviewer)
                                             <p class="exv-sub mb-0">Last reviewer: {{ $version->reviewer->name }}</p>
@@ -380,7 +380,7 @@
                                 </form>
                             </article>
                         @empty
-                            <p class="text-muted text-center py-3 mb-0">No versions uploaded yet.</p>
+                            <p class="text-muted text-center py-3 mb-0">No units uploaded yet.</p>
                         @endforelse
                     </div>
                 </section>

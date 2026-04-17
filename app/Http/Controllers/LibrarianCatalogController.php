@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ThesisCatalogEvent;
 use App\Models\Thesis;
-use App\Models\ThesisVersion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,7 +73,9 @@ class LibrarianCatalogController extends Controller
                 'defense',
                 'latestApprovedVersion',
                 'finalThesisVersion',
+                'finalThesisVersion.unit',
                 'approvedVersions',
+                'approvedVersions.unit',
             ])
             ->withCount('approvedVersions')
             ->latest()
@@ -137,33 +138,30 @@ class LibrarianCatalogController extends Controller
     {
         $payload = $request->validate([
             'publish_notes' => 'nullable|string|max:2000',
-            'final_version_id' => 'nullable|integer|exists:thesis_versions,id',
         ]);
+
+        if ($thesis->is_public) {
+            return back()->with('error', 'This thesis is already published and locked.');
+        }
 
         if (!$thesis->is_library_approved || $thesis->status !== 'completed') {
             return back()->with('error', 'Only validated completed theses can be published.');
         }
 
-        if (!$thesis->approvedVersions()->exists()) {
-            return back()->with('error', 'An approved thesis version is required before publishing.');
-        }
-
-        $finalVersion = $this->resolveFinalThesisVersion($thesis, $payload['final_version_id'] ?? null);
+        $finalVersion = $thesis->finalThesisVersion()
+            ->where('status', 'approved')
+            ->first();
 
         if (!$finalVersion) {
-            return back()->with('error', 'Select an approved version to publish as the final thesis.');
+            return back()->with('error', 'Supervisor must assign an approved "Final Thesis Selected" version before publishing.');
         }
 
         DB::transaction(function () use ($thesis, $payload, $finalVersion) {
-            $thesis->versions()->where('is_final_thesis', true)->update([
-                'is_final_thesis' => false,
-                'finalized_at' => null,
-            ]);
-
-            $finalVersion->update([
-                'is_final_thesis' => true,
-                'finalized_at' => now(),
-            ]);
+            if (!$finalVersion->finalized_at) {
+                $finalVersion->update([
+                    'finalized_at' => now(),
+                ]);
+            }
 
             $thesis->update([
                 'is_public' => true,
@@ -181,11 +179,14 @@ class LibrarianCatalogController extends Controller
                     'is_public' => $thesis->is_public,
                     'final_version_id' => $finalVersion->id,
                     'final_version_number' => $finalVersion->version_number,
+                    'final_unit_number' => $finalVersion->unit_sequence,
+                    'final_unit_label' => $finalVersion->unit_label,
+                    'source' => 'librarian.publish.locked_final',
                 ]
             );
         });
 
-        return back()->with('success', 'Thesis published to the public catalog.');
+        return back()->with('success', 'Thesis published to the public catalog with supervisor-selected final thesis ' . $finalVersion->unit_label . '.');
     }
 
     public function unpublishCatalogEntry(Request $request, Thesis $thesis)
@@ -193,6 +194,10 @@ class LibrarianCatalogController extends Controller
         $payload = $request->validate([
             'unpublish_reason' => 'required|string|min:8|max:2000',
         ]);
+
+        if (!$thesis->is_public) {
+            return back()->with('error', 'This thesis is already private.');
+        }
 
         DB::transaction(function () use ($thesis, $payload) {
             $thesis->update([
@@ -209,11 +214,13 @@ class LibrarianCatalogController extends Controller
                     'status' => $thesis->status,
                     'is_library_approved' => $thesis->is_library_approved,
                     'is_public' => $thesis->is_public,
+                    'final_unit_label' => $thesis->finalThesisVersion?->unit_label,
+                    'source' => 'librarian.manual_unpublish',
                 ]
             );
         });
 
-        return back()->with('success', 'Thesis removed from the public catalog.');
+        return back()->with('success', 'Thesis unpublished from the public catalog. You can publish again from library when ready.');
     }
 
     private function isReadyForCatalogValidation(Thesis $thesis): bool
@@ -231,20 +238,6 @@ class LibrarianCatalogController extends Controller
         }
 
         return $thesis->approvedVersions()->exists();
-    }
-
-    private function resolveFinalThesisVersion(Thesis $thesis, ?int $finalVersionId): ?ThesisVersion
-    {
-        if ($finalVersionId) {
-            return $thesis->versions()
-                ->whereKey($finalVersionId)
-                ->where('status', 'approved')
-                ->first();
-        }
-
-        return $thesis->approvedVersions()
-            ->orderByDesc('version_number')
-            ->first();
     }
 
     private function recordCatalogEvent(Thesis $thesis, string $action, ?string $notes = null, ?array $metadata = null): void

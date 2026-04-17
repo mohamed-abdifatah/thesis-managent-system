@@ -309,28 +309,26 @@
         }
     </style>
 
-    <div class="svs-page">
-        <section class="svs-hero">
-            <div class="svs-hero-content">
-                <div>
-                    <p class="svs-kicker">Supervisor Workspace</p>
-                    <h1 class="svs-title">My Assigned Students</h1>
-                    <p class="svs-subtitle">
-                        Manage grouped and ungrouped supervisees, monitor thesis momentum, and jump directly into group thesis workflows.
-                    </p>
-                </div>
-                <div class="svs-actions">
-                    <a href="{{ route('dashboard') }}" class="svs-action">
-                        <i class="feather-home"></i>
-                        Dashboard
-                    </a>
-                    <a href="{{ route('defense.schedule') }}" class="svs-action">
-                        <i class="feather-calendar"></i>
-                        Defense Schedule
-                    </a>
-                </div>
+    @include('partials.supervisor-account-refresh')
+
+    <div class="sup-refresh svs-page">
+        <div class="ta-page-head">
+            <div>
+                <span class="ta-page-kicker">Supervisor Workspace</span>
+                <h1 class="ta-page-title">My Assigned Students</h1>
+                <p class="ta-page-subtitle">Manage grouped and ungrouped supervisees, monitor thesis momentum, and jump directly into group thesis workflows.</p>
             </div>
-        </section>
+            <div class="ta-page-actions">
+                <a href="{{ route('dashboard') }}" class="ta-chip-link">
+                    <i class="feather-home"></i>
+                    Dashboard
+                </a>
+                <a href="{{ route('defense.schedule') }}" class="ta-chip-link">
+                    <i class="feather-calendar"></i>
+                    Defense Schedule
+                </a>
+            </div>
+        </div>
 
         @if($groups->isEmpty() && $ungroupedStudents->isEmpty())
             <div class="svs-empty">
@@ -393,8 +391,8 @@
                     @endphp
 
                     <div class="col-lg-6">
-                        <article class="svs-card">
-                            <header class="svs-card-head">
+                        <article class="svs-card ta-panel">
+                            <header class="svs-card-head ta-panel-head">
                                 <div>
                                     <h3 class="svs-card-title">{{ $group->name }}</h3>
                                     <p class="svs-card-sub">
@@ -407,7 +405,7 @@
                                 <span class="badge bg-soft-primary text-primary">{{ $group->students_count }} Students</span>
                             </header>
 
-                            <div class="svs-card-body">
+                            <div class="svs-card-body ta-panel-body">
                                 @if($groupThesis)
                                     <p class="svs-thesis-label">Shared Group Thesis</p>
                                     <p class="svs-thesis-title" title="{{ $groupThesis->title }}">
@@ -482,8 +480,8 @@
 
                 @if($ungroupedStudents->isNotEmpty())
                     <div class="col-12">
-                        <article class="svs-card">
-                            <header class="svs-card-head">
+                        <article class="svs-card ta-panel">
+                            <header class="svs-card-head ta-panel-head">
                                 <div>
                                     <h3 class="svs-card-title">Ungrouped Students</h3>
                                     <p class="svs-card-sub">Assigned directly to you without a student group.</p>
@@ -491,7 +489,7 @@
                                 <span class="badge bg-soft-dark text-dark">{{ $ungroupedStudents->count() }} Students</span>
                             </header>
 
-                            <div class="svs-card-body">
+                            <div class="svs-card-body ta-panel-body">
                                 <div class="d-grid gap-2">
                                     @foreach($ungroupedStudents as $student)
                                         <div class="svs-member-row">

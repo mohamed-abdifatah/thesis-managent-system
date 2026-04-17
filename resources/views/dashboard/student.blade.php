@@ -321,7 +321,7 @@
             @else
                 <a href="{{ route('thesis.versions.index') }}" class="ta-chip-link ta-primary">
                     <i class="feather-upload-cloud"></i>
-                    Thesis Versions
+                    Thesis Units
                 </a>
                 <a href="{{ route('defense.schedule') }}" class="ta-chip-link">
                     <i class="feather-calendar"></i>
@@ -349,7 +349,7 @@
         <article class="sd-stat">
             <span class="icon"><i class="feather-layers"></i></span>
             <div>
-                <p class="label">Versions Uploaded</p>
+                <p class="label">Units Uploaded</p>
                 <p class="value">{{ number_format($versionCount) }}</p>
             </div>
         </article>
@@ -484,8 +484,8 @@
                             <strong>{{ $latestProposal ? ucfirst(str_replace('_', ' ', $latestProposal->status)) : 'None' }}</strong>
                         </div>
                         <div class="sd-kpi">
-                            <span>Latest Version</span>
-                            <strong>{{ $latestVersion ? '#'.$latestVersion->version_number : 'Not Uploaded' }}</strong>
+                            <span>Latest Unit</span>
+                            <strong>{{ $latestVersion ? $latestVersion->unit_label : 'Not Uploaded' }}</strong>
                         </div>
                         <div class="sd-kpi">
                             <span>Approved Versions</span>
@@ -514,7 +514,7 @@
                         My Proposals <i class="feather-arrow-right"></i>
                     </a>
                     <a href="{{ route('thesis.versions.index') }}" class="ta-chip-link justify-content-between">
-                        Thesis Versions <i class="feather-arrow-right"></i>
+                        Thesis Units <i class="feather-arrow-right"></i>
                     </a>
                     <a href="{{ route('defense.schedule') }}" class="ta-chip-link justify-content-between">
                         Defense Schedule <i class="feather-arrow-right"></i>

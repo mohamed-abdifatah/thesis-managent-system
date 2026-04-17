@@ -6,6 +6,9 @@
             ->count();
         $completedSessions = $sessions->where('status', 'completed')->count();
         $cancelledSessions = $sessions->where('status', 'cancelled')->count();
+        $isStudentView = auth()->user()->hasRole('student');
+        $isSupervisorView = auth()->user()->hasRole('supervisor');
+        $refreshClass = $isStudentView ? 'stu-refresh' : ($isSupervisorView ? 'sup-refresh' : '');
     @endphp
 
     <style>
@@ -218,8 +221,9 @@
     </style>
 
     @include('partials.student-account-refresh')
+    @include('partials.supervisor-account-refresh')
 
-    <div class="{{ auth()->user()->hasRole('student') ? 'stu-refresh' : '' }}">
+    <div class="{{ $refreshClass }}">
     <div class="ta-page-head">
         <div>
             <span class="ta-page-kicker">Academic Workflow</span>
@@ -231,10 +235,15 @@
                 <i class="feather-grid"></i>
                 Dashboard
             </a>
-            @if(auth()->user()->hasRole('student'))
+            @if($isStudentView)
                 <a href="{{ route('thesis.versions.index') }}" class="ta-chip-link">
                     <i class="feather-upload-cloud"></i>
-                    Thesis Versions
+                    Thesis Units
+                </a>
+            @elseif($isSupervisorView)
+                <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link">
+                    <i class="feather-users"></i>
+                    My Students
                 </a>
             @endif
         </div>

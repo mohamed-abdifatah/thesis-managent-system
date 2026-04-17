@@ -305,7 +305,7 @@
             @if($isStudent && $hasActiveThesis)
                 <a href="{{ route('thesis.versions.index') }}" class="ta-chip-link">
                     <i class="feather-upload-cloud"></i>
-                    Thesis Versions
+                    Thesis Units
                 </a>
             @endif
         </div>

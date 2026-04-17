@@ -42,6 +42,16 @@
                 --books-line: rgba(23, 37, 53, 0.14);
                 --books-overlay: #ffffff;
                 --books-top-btn-bg: rgba(255, 255, 255, 0.74);
+
+                /* Shared header and hero tokens used by welcome page styles */
+                --ink: var(--books-ink);
+                --muted: var(--books-muted);
+                --line: var(--books-line);
+                --accent: #e4572e;
+                --accent-strong: #c7421d;
+                --teal: var(--books-accent);
+                --card: var(--books-panel);
+                --header-glass: rgba(255, 255, 255, 0.72);
             }
 
             html.app-skin-dark body {
@@ -58,6 +68,15 @@
                 --books-line: rgba(206, 220, 238, 0.16);
                 --books-overlay: #111a25;
                 --books-top-btn-bg: rgba(18, 24, 34, 0.74);
+
+                --ink: var(--books-ink);
+                --muted: var(--books-muted);
+                --line: var(--books-line);
+                --accent: #ff8a5b;
+                --accent-strong: #ff6a32;
+                --teal: var(--books-accent);
+                --card: var(--books-panel);
+                --header-glass: rgba(16, 24, 37, 0.72);
             }
 
             * {
@@ -125,110 +144,157 @@
                 z-index: 1;
             }
 
-            .books-topbar {
+            .site-header {
+                position: sticky;
+                top: 14px;
+                z-index: 30;
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 16px;
-                flex-wrap: wrap;
+                gap: 14px;
+                border: 1px solid var(--line);
+                background: var(--header-glass);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border-radius: 18px;
+                padding: 10px 12px;
                 margin-bottom: 20px;
                 animation: fadeSlide 0.45s ease both;
             }
 
-            .logo {
-                display: flex;
+            .brand {
+                display: inline-flex;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
+                text-decoration: none;
+                color: var(--ink);
                 font-weight: 700;
-                letter-spacing: 0.02em;
+                min-width: 0;
             }
 
-            .logo-mark {
-                width: 44px;
-                height: 44px;
+            .brand-mark {
+                width: 42px;
+                height: 42px;
                 border-radius: 14px;
-                background: linear-gradient(135deg, #e4572e, #ffba5a);
-                display: grid;
-                place-items: center;
-                color: #fff;
-                font-family: "Fraunces", serif;
-                font-size: 20px;
-                box-shadow: 0 10px 30px rgba(228, 87, 46, 0.35);
-            }
-
-            .books-topbar nav {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                flex-wrap: wrap;
-            }
-
-            .welcome-btn {
+                overflow: hidden;
                 display: inline-flex;
                 align-items: center;
                 justify-content: center;
-                padding: 10px 18px;
-                border-radius: 999px;
+                background: #ffffff;
+                border: 1px solid var(--line);
+                box-shadow: 0 10px 18px rgba(15, 23, 42, 0.12);
+            }
+
+            .brand-mark img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+            }
+
+            .brand-copy {
+                display: flex;
+                flex-direction: column;
+                line-height: 1.12;
+            }
+
+            .brand-copy strong {
+                font-size: 0.95rem;
+                letter-spacing: -0.02em;
+            }
+
+            .brand-copy span {
+                font-size: 0.69rem;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--muted);
+                margin-top: 3px;
+            }
+
+            .site-nav {
+                display: flex;
+                align-items: center;
+                flex-wrap: wrap;
+                justify-content: flex-end;
+                gap: 8px;
+            }
+
+            .nav-btn {
                 border: 1px solid transparent;
+                border-radius: 999px;
+                min-height: 40px;
+                padding: 9px 16px;
+                font-size: 0.82rem;
+                font-weight: 700;
                 text-decoration: none;
-                font-weight: 600;
-                transition: all 0.2s ease;
-                background: transparent;
                 cursor: pointer;
-                font-size: 0.92rem;
+                transition: all 0.2s ease;
             }
 
-            .welcome-btn-ghost {
-                border-color: var(--books-line);
-                color: var(--books-ink);
-                background: var(--books-top-btn-bg);
+            .nav-btn.ghost {
+                color: var(--ink);
+                background: rgba(255, 255, 255, 0.6);
+                border-color: var(--line);
             }
 
-            .welcome-btn-ghost:hover {
-                border-color: rgba(201, 215, 235, 0.45);
-                color: var(--books-ink);
+            html.app-skin-dark body .nav-btn.ghost {
+                background: rgba(17, 27, 40, 0.72);
+            }
+
+            .nav-btn.ghost:hover {
                 transform: translateY(-1px);
+                border-color: rgba(159, 178, 206, 0.5);
             }
 
-            .welcome-btn-primary {
-                background: #e4572e;
-                color: #fff;
-                box-shadow: 0 14px 30px rgba(228, 87, 46, 0.35);
+            .nav-btn.primary {
+                color: #ffffff;
+                background: linear-gradient(145deg, var(--accent), var(--accent-strong));
+                box-shadow: 0 14px 26px rgba(217, 79, 32, 0.3);
             }
 
-            .welcome-btn-primary:hover {
-                background: #c7421d;
-                color: #fff;
+            .nav-btn.primary:hover {
                 transform: translateY(-1px);
+                box-shadow: 0 18px 30px rgba(217, 79, 32, 0.35);
             }
 
-            .books-hero {
+            .hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+                gap: 16px;
+                margin-bottom: 16px;
+            }
+
+            .hero-main,
+            .hero-side {
                 position: relative;
                 border: 1px solid var(--books-border);
-                border-radius: 30px;
+                border-radius: 26px;
                 background:
                     linear-gradient(120deg, rgba(255, 255, 255, 0.88) 0%, rgba(248, 241, 228, 0.9) 52%, rgba(236, 246, 248, 0.9) 100%);
                 box-shadow: var(--books-shadow);
-                overflow: hidden;
                 padding: clamp(20px, 3vw, 34px);
-                margin-bottom: 16px;
                 animation: fadeSlide 0.52s ease both;
             }
 
-            html.app-skin-dark body .books-hero {
+            .hero-main {
+                overflow: hidden;
+            }
+
+            html.app-skin-dark body .hero-main,
+            html.app-skin-dark body .hero-side {
                 background:
                     linear-gradient(120deg, rgba(20, 28, 40, 0.92) 0%, rgba(26, 35, 49, 0.92) 52%, rgba(17, 27, 37, 0.9) 100%);
             }
 
-            .books-hero::before,
-            .books-hero::after {
+            .hero-main::before,
+            .hero-main::after {
                 content: '';
                 position: absolute;
                 border-radius: 999px;
                 pointer-events: none;
             }
 
-            .books-hero::before {
+            .hero-main::before {
                 width: 220px;
                 height: 220px;
                 right: -48px;
@@ -236,7 +302,7 @@
                 background: radial-gradient(circle, rgba(15, 106, 117, 0.22) 0%, transparent 72%);
             }
 
-            .books-hero::after {
+            .hero-main::after {
                 width: 200px;
                 height: 200px;
                 left: -70px;
@@ -244,7 +310,7 @@
                 background: radial-gradient(circle, rgba(190, 106, 25, 0.18) 0%, transparent 72%);
             }
 
-            .books-kicker {
+            .hero-kicker {
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
@@ -256,11 +322,11 @@
                 letter-spacing: 0.08em;
             }
 
-            html.app-skin-dark body .books-kicker {
+            html.app-skin-dark body .hero-kicker {
                 color: #7ed4e0;
             }
 
-            .books-kicker::before {
+            .hero-kicker::before {
                 content: '';
                 width: 24px;
                 height: 2px;
@@ -268,11 +334,11 @@
                 background: #2a5f6d;
             }
 
-            html.app-skin-dark body .books-kicker::before {
+            html.app-skin-dark body .hero-kicker::before {
                 background: #7ed4e0;
             }
 
-            .books-hero h2 {
+            .hero-title {
                 margin: 0;
                 font-family: 'Cormorant Garamond', serif;
                 font-size: clamp(1.95rem, 4.2vw, 3.1rem);
@@ -281,7 +347,7 @@
                 max-width: 920px;
             }
 
-            .books-hero p {
+            .hero-text {
                 margin: 12px 0 0;
                 max-width: 820px;
                 color: #4e647c;
@@ -289,8 +355,26 @@
                 line-height: 1.72;
             }
 
-            html.app-skin-dark body .books-hero p {
+            html.app-skin-dark body .hero-text {
                 color: #afbdd0;
+            }
+
+            .hero-side {
+                display: grid;
+                grid-template-rows: auto 1fr;
+                gap: 14px;
+            }
+
+            .hero-side h2 {
+                margin: 0;
+                font-size: 1.1rem;
+                letter-spacing: -0.02em;
+            }
+
+            .hero-side p {
+                margin: 6px 0 0;
+                color: var(--muted);
+                font-size: 0.88rem;
             }
 
             .books-search {
@@ -347,7 +431,7 @@
             }
 
             .books-insights {
-                margin: 16px 0 20px;
+                margin: 0;
                 display: grid;
                 grid-template-columns: repeat(3, minmax(0, 1fr));
                 gap: 12px;
@@ -621,9 +705,8 @@
             }
 
             @media (max-width: 900px) {
-                .books-topbar {
-                    flex-direction: column;
-                    align-items: flex-start;
+                .hero {
+                    grid-template-columns: 1fr;
                 }
 
                 .books-insights {
@@ -641,15 +724,8 @@
                     padding: 20px 12px 32px;
                 }
 
-                .books-topbar nav {
-                    width: 100%;
-                }
-
-                .books-topbar nav .welcome-btn {
-                    flex: 1 1 auto;
-                }
-
-                .books-hero {
+                .hero-main,
+                .hero-side {
                     border-radius: 22px;
                     padding: 20px 16px;
                 }
@@ -686,62 +762,50 @@
         @endphp
 
         <div class="books-shell" id="books-main-content">
-            <header class="books-topbar">
-                <div class="logo">
-                    <div class="logo-mark">T</div>
-                    <span>{{ config('app.name', 'Thesis Management System') }}</span>
-                </div>
+            @include('partials.public-header')
 
-                <nav>
-                    <button class="welcome-btn welcome-btn-ghost" id="themeToggle" type="button" aria-pressed="true">
-                        Light theme
-                    </button>
-                    @if (Route::has('login'))
-                        @auth
-                            <a class="welcome-btn welcome-btn-primary" href="{{ url('/dashboard') }}">Go to dashboard</a>
-                        @else
-                            <a class="welcome-btn welcome-btn-ghost" href="{{ route('login') }}">Log in</a>
-                            @if (Route::has('register'))
-                                <a class="welcome-btn welcome-btn-primary" href="{{ route('register') }}">Create account</a>
-                            @endif
-                        @endauth
-                    @endif
-                </nav>
-            </header>
+            <section class="hero" aria-label="Books page title and summary">
+                <article class="hero-main">
+                    <span class="hero-kicker">Open Knowledge Collection</span>
+                    <h1 class="hero-title">Discover final thesis books curated for public access.</h1>
+                    <p class="hero-text">Explore research that has completed defense, final unit selection, and publication review. Search by title, student, or group and open the approved final manuscript.</p>
 
-            <section class="books-hero">
-                <span class="books-kicker">Open Knowledge Collection</span>
-                <h2>Discover final thesis books curated for public access.</h2>
-                <p>Explore research that has completed defense, final-version selection, and publication review. Search by title, student, or group and open the approved final manuscript.</p>
+                    <form method="GET" action="{{ route('books.index') }}" class="books-search">
+                        <input type="text" name="q" value="{{ $search }}" placeholder="Search title, student, or group" aria-label="Search books" />
+                        <div class="d-flex gap-2">
+                            <select name="sort" class="form-select" style="min-width: 170px;" aria-label="Sort books">
+                                <option value="newest" @selected(($sort ?? 'newest') === 'newest')>Newest First</option>
+                                <option value="popular" @selected(($sort ?? 'newest') === 'popular')>Most Downloaded</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                        </div>
+                    </form>
+                </article>
 
-                <form method="GET" action="{{ route('books.index') }}" class="books-search">
-                    <input type="text" name="q" value="{{ $search }}" placeholder="Search title, student, or group" aria-label="Search books" />
-                    <div class="d-flex gap-2">
-                        <select name="sort" class="form-select" style="min-width: 170px;" aria-label="Sort books">
-                            <option value="newest" @selected(($sort ?? 'newest') === 'newest')>Newest First</option>
-                            <option value="popular" @selected(($sort ?? 'newest') === 'popular')>Most Downloaded</option>
-                        </select>
-                        <button type="submit" class="btn btn-primary">Apply</button>
+                <aside class="hero-side" aria-label="Catalog insights">
+                    <div>
+                        <h2>Catalog Snapshot</h2>
+                        <p>A quick view of current catalog volume and what this page is showing.</p>
                     </div>
-                </form>
-            </section>
 
-            <section class="books-insights" aria-label="Catalog insights">
-                <article class="books-insight">
-                    <span class="label">Public Books</span>
-                    <span class="value">{{ number_format($totalCount) }}</span>
-                    <span class="sub">Final published records in repository</span>
-                </article>
-                <article class="books-insight">
-                    <span class="label">Visible On This Page</span>
-                    <span class="value">{{ number_format($pageCount) }}</span>
-                    <span class="sub">Page {{ $books->currentPage() }} of {{ max($books->lastPage(), 1) }}</span>
-                </article>
-                <article class="books-insight">
-                    <span class="label">Current Sort</span>
-                    <span class="value">{{ $sortLabel }}</span>
-                    <span class="sub">Peak downloads in view: {{ number_format($maxDownloads) }}</span>
-                </article>
+                    <section class="books-insights">
+                        <article class="books-insight">
+                            <span class="label">Public Books</span>
+                            <span class="value">{{ number_format($totalCount) }}</span>
+                            <span class="sub">Final published records in repository</span>
+                        </article>
+                        <article class="books-insight">
+                            <span class="label">Visible On This Page</span>
+                            <span class="value">{{ number_format($pageCount) }}</span>
+                            <span class="sub">Page {{ $books->currentPage() }} of {{ max($books->lastPage(), 1) }}</span>
+                        </article>
+                        <article class="books-insight">
+                            <span class="label">Current Sort</span>
+                            <span class="value">{{ $sortLabel }}</span>
+                            <span class="sub">Peak downloads in view: {{ number_format($maxDownloads) }}</span>
+                        </article>
+                    </section>
+                </aside>
             </section>
 
             @if($books->count() > 0)
@@ -757,7 +821,7 @@
                             <div class="book-badges">
                                 <span class="book-badge primary">
                                     <i class="feather-check-circle"></i>
-                                    Final v{{ $book->finalThesisVersion->version_number ?? 'N/A' }}
+                                    Final {{ $book->finalThesisVersion?->unit_label ?? 'Unit N/A' }}
                                 </span>
                                 <span class="book-badge warm">
                                     <i class="feather-download"></i>
@@ -787,7 +851,7 @@
                     <div class="card-body py-5 text-center px-4">
                         <h3>No books visible yet{{ $search ? ' for this search' : '' }}.</h3>
                         <p>
-                            A thesis appears here only after defense completion, final-version selection, and publication approval.
+                            A thesis appears here only after defense completion, final unit selection, and publication approval.
                             Try changing search/sort, or publish a completed thesis from the library workspace.
                         </p>
                     </div>
@@ -803,6 +867,7 @@
             (() => {
                 const root = document.documentElement;
                 const toggleButton = document.getElementById('themeToggle');
+                const buttonLabel = toggleButton ? toggleButton.querySelector('[data-theme-label]') : null;
                 const storageKey = 'app-skin-dark';
 
                 const applyTheme = (theme) => {
@@ -810,7 +875,11 @@
                     root.classList.toggle('app-skin-dark', dark);
 
                     if (toggleButton) {
-                        toggleButton.textContent = dark ? 'Light theme' : 'Dark theme';
+                        if (buttonLabel) {
+                            buttonLabel.textContent = dark ? 'Light theme' : 'Dark theme';
+                        } else {
+                            toggleButton.textContent = dark ? 'Light theme' : 'Dark theme';
+                        }
                         toggleButton.setAttribute('aria-pressed', dark ? 'true' : 'false');
                     }
 

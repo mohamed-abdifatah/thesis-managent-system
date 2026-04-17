@@ -293,6 +293,21 @@
             background: #1a2737;
         }
 
+        .libc-action-note {
+            border: 1px dashed var(--libc-border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            background: #f9fdfc;
+            color: var(--libc-muted);
+            font-size: 0.74rem;
+            line-height: 1.45;
+            text-align: left;
+        }
+
+        html.app-skin-dark .libc-action-note {
+            background: #1a2737;
+        }
+
         .libc-events {
             display: grid;
             gap: 8px;
@@ -363,7 +378,7 @@
                     <p class="libc-kicker">Library Operations</p>
                     <h1 class="libc-title">Catalog Review</h1>
                     <p class="libc-subtitle">
-                        Validate defended theses, select final approved versions, and publish accurate records to the public books portal.
+                        Validate defended theses and publish stable records using the supervisor-selected Final Thesis unit.
                     </p>
                 </div>
                 <div class="libc-actions">
@@ -459,7 +474,7 @@
                 </form>
 
                 <p class="libc-filter-note mt-3 mb-0">
-                    Working versions remain private. Only a selected approved final thesis version is published to the public portal.
+                    Working uploads remain private. Only a selected approved final thesis unit is published to the public portal.
                 </p>
             </div>
         </section>
@@ -490,9 +505,9 @@
                                         $isDefenseComplete = $thesis->defense && $thesis->defense->status === 'completed';
                                         $hasApprovedVersion = $thesis->approved_versions_count > 0;
                                         $canValidate = !$thesis->is_library_approved && $thesis->status === 'defended' && $isDefenseComplete && $hasApprovedVersion;
-                                        $canPublish = $thesis->is_library_approved && $thesis->status === 'completed' && !$thesis->is_public;
-                                        $approvedVersionOptions = $thesis->approvedVersions->sortByDesc('version_number')->values();
-                                        $selectedFinalVersionId = $thesis->finalThesisVersion?->id ?? $approvedVersionOptions->first()?->id;
+                                        $hasLockedFinalVersion = (bool) $thesis->finalThesisVersion;
+                                        $canPublish = $thesis->is_library_approved && $thesis->status === 'completed' && !$thesis->is_public && $hasLockedFinalVersion;
+                                        $awaitingSupervisorFinal = $thesis->is_library_approved && $thesis->status === 'completed' && !$thesis->is_public && !$hasLockedFinalVersion;
                                         $owner = $thesis->group
                                             ? $thesis->group->name
                                             : ($thesis->student->user->name ?? 'Unknown');
@@ -521,9 +536,9 @@
                                             <span class="badge bg-soft-primary text-primary">{{ $thesis->approved_versions_count }}</span>
                                             <div class="libc-sub">
                                                 @if($thesis->finalThesisVersion)
-                                                    Final thesis: v{{ $thesis->finalThesisVersion->version_number }}
+                                                    Final thesis: {{ $thesis->finalThesisVersion->unit_label }} (Supervisor selected)
                                                 @else
-                                                    Final thesis not selected
+                                                    Waiting: Supervisor must set Final Thesis Selected
                                                 @endif
                                             </div>
                                         </td>
@@ -553,18 +568,14 @@
                                                     <form method="POST" action="{{ route('library.catalog.publish', $thesis) }}" class="libc-action-form">
                                                         @csrf
                                                         @method('PATCH')
-                                                        @if($approvedVersionOptions->isNotEmpty())
-                                                            <select name="final_version_id" class="form-select form-select-sm" required>
-                                                                @foreach($approvedVersionOptions as $approvedVersion)
-                                                                    <option value="{{ $approvedVersion->id }}" @selected($selectedFinalVersionId === $approvedVersion->id)>
-                                                                        v{{ $approvedVersion->version_number }} @if($approvedVersion->unit_number) (unit {{ $approvedVersion->unit_number }}) @endif
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        @endif
+                                                        <div class="libc-sub">Using supervisor-selected final thesis {{ $thesis->finalThesisVersion->unit_label }}.</div>
                                                         <textarea name="publish_notes" rows="2" class="form-control form-control-sm" placeholder="Publication notes (optional)"></textarea>
                                                         <button type="submit" class="btn btn-sm btn-primary">Publish</button>
                                                     </form>
+                                                @elseif($awaitingSupervisorFinal)
+                                                    <div class="libc-action-note">
+                                                        Publish is blocked until the supervisor assigns <strong>Final Thesis Selected</strong>.
+                                                    </div>
                                                 @endif
 
                                                 @if($thesis->is_public)
@@ -572,8 +583,8 @@
                                                     <form method="POST" action="{{ route('library.catalog.unpublish', $thesis) }}" class="libc-action-form">
                                                         @csrf
                                                         @method('PATCH')
-                                                        <textarea name="unpublish_reason" rows="2" class="form-control form-control-sm" placeholder="Required reason to unpublish" required></textarea>
-                                                        <button type="submit" class="btn btn-sm btn-light">Unpublish</button>
+                                                        <textarea name="unpublish_reason" rows="2" class="form-control form-control-sm" placeholder="Reason for unpublish (required)" required></textarea>
+                                                        <button type="submit" class="btn btn-sm btn-light" onclick="return confirm('Unpublish this thesis from the public catalog?');">Unpublish</button>
                                                     </form>
                                                 @endif
                                             </div>

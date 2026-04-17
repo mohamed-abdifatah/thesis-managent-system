@@ -183,6 +183,91 @@
             padding: 16px;
         }
 
+        .sv-panel-note {
+            margin: 6px 0 0;
+            color: var(--sv-muted);
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        .sv-final-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+            gap: 12px;
+        }
+
+        .sv-final-card {
+            border: 1px solid var(--sv-border);
+            border-radius: 14px;
+            background: var(--sv-soft);
+            padding: 12px;
+        }
+
+        .sv-final-kicker {
+            margin: 0;
+            color: var(--sv-muted);
+            font-size: 0.68rem;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            font-weight: 800;
+        }
+
+        .sv-final-title {
+            margin: 4px 0 0;
+            color: var(--sv-ink);
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+        }
+
+        .sv-final-meta {
+            margin: 4px 0 0;
+            color: var(--sv-muted);
+            font-size: 0.8rem;
+        }
+
+        .sv-final-state {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sv-final-field {
+            margin-top: 12px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .sv-final-action {
+            margin-top: 10px;
+            display: grid;
+            gap: 8px;
+        }
+
+        .sv-final-note {
+            margin-top: 12px;
+            border: 1px dashed var(--sv-border);
+            border-radius: 12px;
+            padding: 10px 12px;
+            color: var(--sv-muted);
+            font-size: 0.82rem;
+            line-height: 1.55;
+            background: rgba(255, 255, 255, 0.55);
+        }
+
+        html.app-skin-dark .sv-final-note {
+            background: rgba(20, 29, 43, 0.45);
+        }
+
+        .sv-section-note {
+            margin: 0 0 12px;
+            color: var(--sv-muted);
+            font-size: 0.83rem;
+            line-height: 1.55;
+        }
+
         .sv-subtitle {
             margin: 0;
             font-size: 1rem;
@@ -650,6 +735,10 @@
                 padding: 16px;
             }
 
+            .sv-final-grid {
+                grid-template-columns: 1fr;
+            }
+
             .sv-kpi-grid {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
@@ -703,6 +792,8 @@
         }
     </style>
 
+    @include('partials.supervisor-account-refresh')
+
     @php
         $thesisStatusClass = match($thesis->status) {
             'proposal_approved', 'completed' => 'bg-soft-success text-success',
@@ -711,6 +802,11 @@
         };
 
         $currentFinalVersion = $thesis->versions->firstWhere('is_final_thesis', true);
+        $approvedFinalCandidates = $thesis->versions
+            ->where('status', 'approved')
+            ->sortByDesc('version_number')
+            ->values();
+        $selectedFinalVersionId = (int) old('final_version_id', $currentFinalVersion?->id ?? $approvedFinalCandidates->first()?->id);
         $chatItems = $thesis->feedbacks->sortBy('created_at');
         $approvedVersionsCount = $thesis->versions->where('status', 'approved')->count();
         $revisionRequiredCount = $thesis->versions->where('status', 'revision_required')->count();
@@ -722,35 +818,40 @@
         $isDefenseDone = $thesis->status === 'completed';
     @endphp
 
-    <div class="sv-page">
-        <section class="sv-hero">
-            <div class="sv-hero-content">
-                <div>
-                    <span class="sv-kicker">Supervisor Workspace</span>
-                    <h1 class="sv-title">Thesis Details</h1>
-                    <div class="sv-breadcrumb">
-                        <a href="{{ route('dashboard') }}">Dashboard</a>
-                        <span>/</span>
-                        <a href="{{ route('supervisor.students.index') }}">My Students</a>
-                        <span>/</span>
-                        <span>Thesis</span>
-                    </div>
+    <div class="sup-refresh sv-page">
+        <div class="ta-page-head">
+            <div>
+                <span class="ta-page-kicker">Supervisor Workspace</span>
+                <h1 class="ta-page-title">Thesis Details</h1>
+                <p class="ta-page-subtitle">Review proposal progress, thesis units, and final publication readiness for this thesis.</p>
 
-                    <div class="sv-chip-row">
-                        <span class="sv-chip"><i class="feather-user"></i> {{ $thesis->student->user->name ?? 'Unknown Student' }}</span>
-                        <span class="sv-chip"><i class="feather-book-open"></i> {{ $thesis->student->program ?? 'General Program' }}</span>
-                        <span class="sv-chip"><i class="feather-calendar"></i> Created {{ $thesis->created_at->format('M d, Y') }}</span>
-                    </div>
+                <div class="sv-breadcrumb">
+                    <a href="{{ route('dashboard') }}">Dashboard</a>
+                    <span>/</span>
+                    <a href="{{ route('supervisor.students.index') }}">My Students</a>
+                    <span>/</span>
+                    <span>Thesis</span>
                 </div>
 
-                <div class="d-flex flex-column gap-2">
-                    <span class="badge {{ $thesisStatusClass }} text-uppercase">{{ ucfirst(str_replace('_', ' ', $thesis->status)) }}</span>
-                    <a href="{{ route('supervisor.students.index') }}" class="btn btn-outline-secondary">
-                        <i class="feather-arrow-left me-1"></i> Back to List
-                    </a>
+                <div class="sv-chip-row">
+                    <span class="sv-chip"><i class="feather-user"></i> {{ $thesis->student->user->name ?? 'Unknown Student' }}</span>
+                    <span class="sv-chip"><i class="feather-book-open"></i> {{ $thesis->student->program ?? 'General Program' }}</span>
+                    <span class="sv-chip"><i class="feather-calendar"></i> Created {{ $thesis->created_at->format('M d, Y') }}</span>
                 </div>
             </div>
-        </section>
+
+            <div class="ta-page-actions">
+                <span class="badge {{ $thesisStatusClass }} text-uppercase">{{ ucfirst(str_replace('_', ' ', $thesis->status)) }}</span>
+                <a href="{{ route('supervisor.students.index') }}" class="ta-chip-link">
+                    <i class="feather-arrow-left"></i>
+                    Back to Students
+                </a>
+                <a href="{{ route('defense.schedule') }}" class="ta-chip-link">
+                    <i class="feather-calendar"></i>
+                    Defense Schedule
+                </a>
+            </div>
+        </div>
 
         @if(session('success'))
             <div class="alert alert-success border-0 shadow-sm">{{ session('success') }}</div>
@@ -800,11 +901,11 @@
 
         <div class="row g-4">
             <div class="col-12 col-xl-8">
-                <section class="sv-panel mb-4">
-                    <div class="sv-panel-header">
+                <section class="sv-panel ta-panel mb-4">
+                    <div class="sv-panel-header ta-panel-head">
                         <h2 class="sv-subtitle mb-0">{{ $thesis->title }}</h2>
                     </div>
-                    <div class="sv-panel-body">
+                    <div class="sv-panel-body ta-panel-body">
                         <h6 class="sv-soft-title">Abstract</h6>
                         <p class="sv-abstract">{{ $latestProposal?->abstract ?? 'No abstract available yet.' }}</p>
                     </div>
@@ -820,15 +921,15 @@
                         };
                     @endphp
 
-                    <section class="sv-panel mb-4">
-                        <div class="sv-panel-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                    <section class="sv-panel ta-panel mb-4">
+                        <div class="sv-panel-header ta-panel-head d-flex align-items-center justify-content-between gap-2 flex-wrap">
                             <h3 class="sv-subtitle mb-0">Proposal Review</h3>
                             <span class="badge {{ $proposalBadgeClass }} text-uppercase">
                                 {{ str_replace('_', ' ', $latestProposal->status) }}
                             </span>
                         </div>
 
-                        <div class="sv-panel-body">
+                        <div class="sv-panel-body ta-panel-body">
                             <div class="row g-3 mb-3">
                                 <div class="col-12 col-md-6">
                                     <div class="sv-soft-block h-100">
@@ -875,30 +976,113 @@
                         </div>
                     </section>
                 @else
-                    <section class="sv-panel mb-4">
-                        <div class="sv-panel-body text-center py-4 text-muted">
+                    <section class="sv-panel ta-panel mb-4">
+                        <div class="sv-panel-body ta-panel-body text-center py-4 text-muted">
                             No proposal submitted yet.
                         </div>
                     </section>
                 @endif
 
-                <section class="sv-panel">
-                    <div class="sv-panel-header d-flex align-items-center justify-content-between gap-2 flex-wrap">
-                        <h3 class="sv-subtitle mb-0">Thesis Versions</h3>
-                        <span class="small text-muted">Only approved versions can be marked as Final Thesis.</span>
+                <section class="sv-panel ta-panel mb-4">
+                    <div class="sv-panel-header ta-panel-head d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <div>
+                            <h3 class="sv-subtitle mb-0">Final Published Thesis</h3>
+                            <p class="sv-panel-note">Select one approved unit as final, then continue validation and publishing in the library workspace.</p>
+                        </div>
+                        @if($thesis->is_public)
+                            <span class="badge bg-soft-success text-success text-uppercase">Published</span>
+                        @elseif($thesis->is_library_approved)
+                            <span class="badge bg-soft-info text-info text-uppercase">Validated</span>
+                        @else
+                            <span class="badge bg-soft-warning text-warning text-uppercase">Pending Library Flow</span>
+                        @endif
                     </div>
 
-                    <div class="sv-panel-body">
-                        <div class="alert alert-light border mb-3">
-                            @if($currentFinalVersion)
-                                <span class="fw-semibold">Current Final Thesis:</span> v{{ $currentFinalVersion->version_number }}
-                            @else
-                                <span class="fw-semibold">Current Final Thesis:</span> Not selected yet.
-                            @endif
-                            <div class="small text-muted mt-1">
-                                When defense is completed, setting a final thesis version will publish it to the public books portal.
-                            </div>
+                    <div class="sv-panel-body ta-panel-body">
+                        <div class="sv-final-grid">
+                            <article class="sv-final-card">
+                                <p class="sv-final-kicker">Current State</p>
+                                @if($currentFinalVersion)
+                                    <p class="sv-final-title">{{ $currentFinalVersion->unit_label }}</p>
+                                @else
+                                    <p class="sv-final-title">No Final Unit Selected</p>
+                                @endif
+
+                                @if($thesis->is_public)
+                                    <p class="sv-final-meta">Published on {{ optional($thesis->published_at)->format('M d, Y') ?? 'N/A' }}</p>
+                                    <div class="sv-final-state">
+                                        <span class="badge bg-soft-success text-success text-uppercase">Published</span>
+                                        <span class="small text-muted">Visible in the public books portal.</span>
+                                    </div>
+                                @elseif($thesis->is_library_approved)
+                                    <p class="sv-final-meta">Validated by library, waiting for publish step.</p>
+                                    <div class="sv-final-state">
+                                        <span class="badge bg-soft-info text-info text-uppercase">Validated</span>
+                                        <span class="small text-muted">Run publish from library catalog.</span>
+                                    </div>
+                                @else
+                                    <p class="sv-final-meta">Awaiting library validation and publish.</p>
+                                    <div class="sv-final-state">
+                                        <span class="badge bg-soft-warning text-warning text-uppercase">Pending</span>
+                                        <span class="small text-muted">No public record yet.</span>
+                                    </div>
+                                @endif
+                            </article>
+
+                            <article class="sv-final-card">
+                                @if($approvedFinalCandidates->isNotEmpty())
+                                    <form method="POST" action="{{ route('supervisor.theses.final-version', $thesis) }}">
+                                        @csrf
+                                        @method('PATCH')
+
+                                        <div class="sv-final-field">
+                                            <label class="form-label fw-semibold small text-uppercase text-muted" for="final_version_id">Select Existing Approved Unit</label>
+                                            <select id="final_version_id" name="final_version_id" class="form-select" required>
+                                                @foreach($approvedFinalCandidates as $approvedVersion)
+                                                    <option value="{{ $approvedVersion->id }}" @selected($selectedFinalVersionId === $approvedVersion->id)>
+                                                        {{ $approvedVersion->unit_label }}@if($approvedVersion->is_final_thesis) (Current)@endif
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+
+                                        <div class="sv-final-action">
+                                            <button
+                                                type="submit"
+                                                class="btn btn-success"
+                                                onclick="return confirm('Set selected unit as Final Thesis? If changed after validation/publication, library validation and publish will be required again.');"
+                                            >
+                                                {{ $currentFinalVersion ? 'Update Final Thesis' : 'Set Final Thesis' }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <p class="sv-final-kicker">Selection Unavailable</p>
+                                    <p class="sv-final-title">No Approved Units Yet</p>
+                                    <p class="sv-final-meta">Review and approve at least one thesis unit to enable final selection.</p>
+                                @endif
+                            </article>
                         </div>
+
+                        <div class="sv-final-note">
+                            <strong>Publishing Note:</strong>
+                            After final thesis selection or update, this thesis must be validated and published from the Library Catalog.
+                        </div>
+                    </div>
+                </section>
+
+                <section class="sv-panel ta-panel">
+                    <div class="sv-panel-header ta-panel-head d-flex align-items-center justify-content-between gap-2 flex-wrap">
+                        <h3 class="sv-subtitle mb-0">Thesis Units</h3>
+                        @if($currentFinalVersion)
+                            <span class="badge bg-soft-primary text-primary">Current Final: {{ $currentFinalVersion->unit_label }}</span>
+                        @else
+                            <span class="small text-muted">No final thesis selected yet.</span>
+                        @endif
+                    </div>
+
+                    <div class="sv-panel-body ta-panel-body">
+                        <p class="sv-section-note">Review each unit status and comments below. Final thesis selection is managed in the section above.</p>
 
                         <div class="sv-version-list">
                             @forelse($thesis->versions->sortByDesc('version_number') as $version)
@@ -914,7 +1098,7 @@
                                 <article class="sv-version-item">
                                     <div class="sv-version-top">
                                         <div>
-                                            <p class="sv-version-title">Version v{{ $version->version_number }}</p>
+                                            <p class="sv-version-title">{{ $version->unit_label }}</p>
                                             <p class="sv-version-meta">Uploaded {{ $version->created_at->format('M d, Y') }}</p>
                                         </div>
 
@@ -948,25 +1132,10 @@
                                             </select>
                                             <button type="submit" class="btn btn-primary">Update</button>
                                         </form>
-
-                                        @if($version->status === 'approved')
-                                            <form method="POST" action="{{ route('supervisor.theses.final-version', $thesis) }}" class="sv-final-form">
-                                                @csrf
-                                                @method('PATCH')
-                                                <input type="hidden" name="final_version_id" value="{{ $version->id }}" />
-                                                <button type="submit" class="btn btn-outline-success" @disabled($version->is_final_thesis)>
-                                                    @if($version->is_final_thesis)
-                                                        Final Thesis Selected
-                                                    @else
-                                                        Set as Final Thesis
-                                                    @endif
-                                                </button>
-                                            </form>
-                                        @endif
                                     </div>
                                 </article>
                             @empty
-                                <div class="text-muted text-center py-3">No versions uploaded yet.</div>
+                                <div class="text-muted text-center py-3">No units uploaded yet.</div>
                             @endforelse
                         </div>
                     </div>
@@ -974,11 +1143,11 @@
             </div>
 
             <div class="col-12 col-xl-4">
-                <section class="sv-panel mb-4">
-                    <div class="sv-panel-header">
+                <section class="sv-panel ta-panel mb-4">
+                    <div class="sv-panel-header ta-panel-head">
                         <h3 class="sv-subtitle mb-0">Documents</h3>
                     </div>
-                    <div class="sv-panel-body">
+                    <div class="sv-panel-body ta-panel-body">
                         @if($latestProposal && $latestProposal->file_path)
                             <a href="{{ Storage::url($latestProposal->file_path) }}" target="_blank" class="btn btn-primary sv-download-btn d-inline-flex align-items-center justify-content-center gap-2">
                                 <i class="feather-download-cloud"></i>
@@ -991,11 +1160,11 @@
                     </div>
                 </section>
 
-                <section class="sv-panel">
-                    <div class="sv-panel-header">
+                <section class="sv-panel ta-panel">
+                    <div class="sv-panel-header ta-panel-head">
                         <h3 class="sv-subtitle mb-0">Status Timeline</h3>
                     </div>
-                    <div class="sv-panel-body">
+                    <div class="sv-panel-body ta-panel-body">
                         <ul class="sv-timeline">
                             <li class="sv-timeline-item is-done">
                                 <p class="sv-timeline-label">Registered</p>
