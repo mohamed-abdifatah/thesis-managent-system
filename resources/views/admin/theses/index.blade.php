@@ -337,6 +337,11 @@
             display: inline-flex;
             justify-content: flex-end;
             width: 100%;
+            gap: 8px;
+        }
+
+        .tt-actions form {
+            margin: 0;
         }
 
         .tt-action-btn {
@@ -361,6 +366,18 @@
             background: #e3edff;
             border-color: #b9d0ff;
             transform: translateY(-1px);
+        }
+
+        .tt-action-btn.tt-action-danger {
+            color: #b42318;
+            background: #fff1f0;
+            border-color: #f4c7c3;
+        }
+
+        .tt-action-btn.tt-action-danger:hover {
+            color: #8a1c13;
+            background: #ffe6e3;
+            border-color: #f1b5b0;
         }
 
         .tt-empty {
@@ -459,6 +476,12 @@
             color: #9fc1ff;
             background: rgba(48, 88, 168, 0.35);
             border-color: rgba(110, 154, 242, 0.45);
+        }
+
+        html.app-skin-dark .tt-action-btn.tt-action-danger {
+            color: #ffb4ac;
+            background: rgba(170, 40, 40, 0.34);
+            border-color: rgba(223, 121, 114, 0.45);
         }
 
         html.app-skin-dark .tt-status.ready,
@@ -700,6 +723,15 @@
                                 'rejected' => 'Requires resubmission or scope revision.',
                                 default => 'Current stage is being tracked.',
                             };
+
+                            $group = $thesis->group ?? $thesis->student?->group;
+                            $groupMetaParts = array_filter([
+                                $group?->program,
+                                $group?->academic_year,
+                            ]);
+                            $groupMeta = $group ? implode(' · ', $groupMetaParts) : null;
+                            $groupSub = $groupMeta
+                                ?: ($group?->department?->name ? 'Dept: ' . $group->department->name : 'No group details');
                         @endphp
                         <tr class="tt-row">
                             <td>
@@ -719,14 +751,28 @@
                             </td>
                             <td>
                                 <div class="tt-participants">
-                                    <div class="tt-person-card">
-                                        <span class="tt-avatar">{{ strtoupper(substr($thesis->student?->user?->name ?? 'U', 0, 1)) }}</span>
-                                        <span class="tt-person-main">
-                                            <span class="tt-role-tag">Student</span>
-                                            <span class="tt-person-name">{{ $thesis->student?->user?->name ?? 'Unknown Student' }}</span>
-                                            <span class="tt-sub">{{ $thesis->student?->student_id_number ?? 'No student id' }}</span>
-                                        </span>
-                                    </div>
+                                    @if($group)
+                                        <div class="tt-person-card">
+                                            <span class="tt-avatar">{{ strtoupper(substr($group->name ?? 'G', 0, 1)) }}</span>
+                                            <span class="tt-person-main">
+                                                <span class="tt-role-tag">Group</span>
+                                                <span class="tt-person-name">{{ $group->name ?? 'Unnamed Group' }}</span>
+                                                <span class="tt-sub">{{ $groupSub }}</span>
+                                                @if($thesis->student?->user?->name)
+                                                    <span class="tt-sub">Representative: {{ $thesis->student->user->name }}</span>
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @else
+                                        <div class="tt-person-card">
+                                            <span class="tt-avatar">{{ strtoupper(substr($thesis->student?->user?->name ?? 'U', 0, 1)) }}</span>
+                                            <span class="tt-person-main">
+                                                <span class="tt-role-tag">Student</span>
+                                                <span class="tt-person-name">{{ $thesis->student?->user?->name ?? 'Unknown Student' }}</span>
+                                                <span class="tt-sub">{{ $thesis->student?->student_id_number ?? 'No student id' }}</span>
+                                            </span>
+                                        </div>
+                                    @endif
 
                                     <div class="tt-person-card">
                                         <span class="tt-avatar">{{ strtoupper(substr($thesis->supervisor?->user?->name ?? 'S', 0, 1)) }}</span>
@@ -779,6 +825,14 @@
                                         <i class="feather-user-plus"></i>
                                         {{ $thesis->supervisor ? 'Reassign supervisor' : 'Assign supervisor' }}
                                     </button>
+                                    <form method="POST" action="{{ route('admin.theses.destroy', $thesis) }}" onsubmit="return confirm('Delete this thesis? All related records will be removed.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="tt-action-btn tt-action-danger">
+                                            <i class="feather-trash-2"></i>
+                                            Delete
+                                        </button>
+                                    </form>
                                 </div>
                             </td>
                         </tr>

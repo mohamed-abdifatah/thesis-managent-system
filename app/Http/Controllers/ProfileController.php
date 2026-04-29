@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Models\Evaluation;
+use App\Models\Feedback;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
@@ -50,7 +53,11 @@ class ProfileController extends Controller
 
         Auth::logout();
 
-        $user->delete();
+        DB::transaction(function () use ($user) {
+            Evaluation::where('user_id', $user->id)->delete();
+            Feedback::where('user_id', $user->id)->delete();
+            $user->delete();
+        });
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();

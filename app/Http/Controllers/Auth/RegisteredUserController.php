@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\Department;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -36,11 +37,28 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
+        $roleId = \App\Models\Role::where('name', 'student')->value('id');
+        if (!$roleId) {
+            $roleId = \App\Models\Role::create([
+                'name' => 'student',
+                'description' => 'University Student',
+            ])->id;
+        }
+
+        $department = Department::query()->orderBy('id')->first();
+        if (!$department) {
+            $department = Department::create([
+                'name' => 'General Studies',
+                'code' => 'GEN',
+            ]);
+        }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role_id' => \App\Models\Role::where('name', 'student')->first()->id, // Default to student
+            'role_id' => $roleId, // Default to student
+            'department_id' => $department->id,
         ]);
 
         // Create student profile automatically

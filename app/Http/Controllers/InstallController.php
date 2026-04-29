@@ -172,6 +172,12 @@ class InstallController extends Controller
             if ($request->account_mode === 'manual') {
                 $role = Role::where('name', 'admin')->first();
                 $department = Department::first();
+                if (!$department) {
+                    $department = Department::create([
+                        'name' => 'General Studies',
+                        'code' => 'GEN',
+                    ]);
+                }
 
                 User::updateOrCreate(
                     ['email' => $request->admin_email],

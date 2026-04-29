@@ -115,6 +115,15 @@
             border-color: #dde6f2;
         }
 
+        .tg-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .tg-actions form {
+            margin: 0;
+        }
+
         .tg-metric {
             display: inline-flex;
             align-items: center;
@@ -345,6 +354,7 @@
                         <th>Program / Year</th>
                         <th>Workload</th>
                         <th>Updated</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -380,10 +390,22 @@
                                 {{ $group->updated_at?->format('M d, Y') ?? '-' }}
                                 <div class="text-muted small">{{ $group->updated_at?->diffForHumans() ?? '' }}</div>
                             </td>
+                            <td class="text-end">
+                                <div class="tg-actions">
+                                    <form method="POST" action="{{ route('admin.groups.destroy', $group) }}" onsubmit="return confirm('Delete this group? Students and theses will be unlinked.');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="feather-trash-2"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="7">
                                 <div class="tg-empty">
                                     <i class="feather-folder-minus"></i>
                                     <h4>No groups found</h4>

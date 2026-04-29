@@ -13,6 +13,12 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         $department = \App\Models\Department::first();
+        if (!$department) {
+            $department = \App\Models\Department::create([
+                'name' => 'General Studies',
+                'code' => 'GEN',
+            ]);
+        }
 
         $this->createUser('admin', 'System Admin', 'admin@example.com', $department);
         

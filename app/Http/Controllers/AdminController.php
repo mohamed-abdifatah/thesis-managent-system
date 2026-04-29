@@ -8,10 +8,18 @@ use App\Models\Department;
 use App\Models\Student;
 use App\Models\Supervisor;
 use App\Models\Thesis;
+use App\Models\Proposal;
+use App\Models\ThesisVersion;
+use App\Models\Feedback;
+use App\Models\ThesisUnit;
+use App\Models\ThesisCatalogEvent;
+use App\Models\DefenseSession;
+use App\Models\Evaluation;
 use App\Models\StudentGroup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -194,8 +202,12 @@ class AdminController extends Controller
         if ($user->id === auth()->id()) {
             return back()->with('error', 'You cannot delete yourself.');
         }
-        
-        $user->delete();
+
+        DB::transaction(function () use ($user) {
+            Evaluation::where('user_id', $user->id)->delete();
+            Feedback::where('user_id', $user->id)->delete();
+            $user->delete();
+        });
         return back()->with('success', 'User deleted successfully.');
     }
 
@@ -224,7 +236,12 @@ class AdminController extends Controller
             $statusFilter = '';
         }
 
-        $query = Thesis::with(['student.user', 'supervisor.user'])
+        $query = Thesis::with([
+            'student.user',
+            'student.group.department',
+            'supervisor.user',
+            'group.department',
+        ])
             ->withCount(['proposals', 'versions']);
 
         if ($search !== '') {
@@ -491,6 +508,61 @@ class AdminController extends Controller
         });
 
         return redirect()->route('admin.groups.index')->with('success', 'Student group created successfully.');
+    }
+
+    public function groupsDestroy(StudentGroup $group)
+    {
+        DB::transaction(function () use ($group) {
+            Student::where('student_group_id', $group->id)->update(['student_group_id' => null]);
+            Thesis::where('student_group_id', $group->id)->update(['student_group_id' => null]);
+            $group->delete();
+        });
+
+        return back()->with('success', 'Group deleted. Students and theses were unlinked.');
+    }
+
+    public function thesesDestroy(Thesis $thesis)
+    {
+        $title = $thesis->title;
+        $versionFiles = ThesisVersion::where('thesis_id', $thesis->id)
+            ->pluck('file_path')
+            ->filter()
+            ->values();
+        $proposalFiles = Proposal::where('thesis_id', $thesis->id)
+            ->pluck('file_path')
+            ->filter()
+            ->values();
+
+        DB::transaction(function () use ($thesis) {
+            Feedback::where('thesis_id', $thesis->id)->delete();
+            ThesisCatalogEvent::where('thesis_id', $thesis->id)->delete();
+            ThesisVersion::where('thesis_id', $thesis->id)->delete();
+            Proposal::where('thesis_id', $thesis->id)->delete();
+            ThesisUnit::where('thesis_id', $thesis->id)->delete();
+
+            $defenseSessions = DefenseSession::where('thesis_id', $thesis->id)->get();
+            foreach ($defenseSessions as $session) {
+                $session->committeeMembers()->delete();
+                $session->evaluations()->delete();
+                $session->delete();
+            }
+
+            $thesis->delete();
+        });
+
+        $storage = Storage::disk('public');
+        foreach ($versionFiles as $path) {
+            if ($storage->exists($path)) {
+                $storage->delete($path);
+            }
+        }
+        foreach ($proposalFiles as $path) {
+            if ($storage->exists($path)) {
+                $storage->delete($path);
+            }
+        }
+
+        return back()->with('success', "Thesis '{$title}' deleted.");
     }
 
     public function departmentsStore(Request $request)

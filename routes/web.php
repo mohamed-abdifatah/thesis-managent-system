@@ -83,6 +83,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/groups', [AdminController::class, 'groupsIndex'])->name('groups.index');
         Route::get('/groups/create', [AdminController::class, 'groupsCreate'])->name('groups.create');
         Route::post('/groups', [AdminController::class, 'groupsStore'])->name('groups.store');
+        Route::delete('/groups/{group}', [AdminController::class, 'groupsDestroy'])->name('groups.destroy');
 
         // Departments
         Route::post('/departments', [AdminController::class, 'departmentsStore'])->name('departments.store');
@@ -90,6 +91,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Thesis Management
         Route::get('/theses', [AdminController::class, 'theses'])->name('theses.index');
         Route::post('/theses/{thesis}/assign', [AdminController::class, 'assignSupervisor'])->name('theses.assign');
+        Route::delete('/theses/{thesis}', [AdminController::class, 'thesesDestroy'])->name('theses.destroy');
 
         // Defense Sessions
         Route::get('/defenses', [DefenseSessionController::class, 'index'])->name('defenses.index');
