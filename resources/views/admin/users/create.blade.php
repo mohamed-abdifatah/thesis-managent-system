@@ -313,13 +313,14 @@
 
                             <div class="col-md-6">
                                 <label for="department_id" class="form-label">Department <span class="text-danger">*</span></label>
-                                <select class="form-select @error('department_id') is-invalid @enderror" id="department_id" name="department_id">
+                                <select class="form-select js-department-select @error('department_id') is-invalid @enderror" id="department_id" name="department_id">
                                     <option value="">Select department...</option>
                                     @foreach($departments as $department)
                                         <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
                                             {{ $department->name }} ({{ $department->code }})
                                         </option>
                                     @endforeach
+                                    <option value="__create__">+ Create new department...</option>
                                 </select>
                                 @error('department_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -433,5 +434,6 @@
 
         document.addEventListener('DOMContentLoaded', toggleSupervisorField);
     </script>
+    @include('partials.department-select-create')
     </div>
 </x-app-layout>

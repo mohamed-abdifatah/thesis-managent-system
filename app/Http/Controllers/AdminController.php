@@ -492,4 +492,19 @@ class AdminController extends Controller
 
         return redirect()->route('admin.groups.index')->with('success', 'Student group created successfully.');
     }
+
+    public function departmentsStore(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:departments,code',
+        ]);
+
+        $department = Department::create([
+            'name' => $data['name'],
+            'code' => strtoupper(trim($data['code'])),
+        ]);
+
+        return response()->json(['data' => $department], 201);
+    }
 }

@@ -84,6 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/groups/create', [AdminController::class, 'groupsCreate'])->name('groups.create');
         Route::post('/groups', [AdminController::class, 'groupsStore'])->name('groups.store');
 
+        // Departments
+        Route::post('/departments', [AdminController::class, 'departmentsStore'])->name('departments.store');
+
         // Thesis Management
         Route::get('/theses', [AdminController::class, 'theses'])->name('theses.index');
         Route::post('/theses/{thesis}/assign', [AdminController::class, 'assignSupervisor'])->name('theses.assign');

@@ -293,13 +293,14 @@
 
                 <div>
                     <label class="tg-label" for="department_id">Department</label>
-                    <select id="department_id" name="department_id" class="form-select">
+                    <select id="department_id" name="department_id" class="form-select js-department-select">
                         <option value="0">All departments</option>
                         @foreach($departments as $department)
                             <option value="{{ $department->id }}" {{ $departmentFilter === $department->id ? 'selected' : '' }}>
                                 {{ $department->code }} - {{ $department->name }}
                             </option>
                         @endforeach
+                        <option value="__create__">+ Create new department...</option>
                     </select>
                 </div>
 
@@ -403,4 +404,5 @@
         {{ $groups->links() }}
     </div>
     </div>
+    @include('partials.department-select-create')
 </x-app-layout>
